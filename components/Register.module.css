@@ -1,11 +1,7 @@
 /* General body and layout styling */
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-  }
+
   
-  body {
+  .body {
     font-family: 'Poppins', sans-serif; /* Cute, friendly font */
     background-color: #f9f6ff; /* Soft lavender background */
     display: flex;
