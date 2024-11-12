@@ -1,10 +1,14 @@
-'use client'
+'use client';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import liff from '@line/liff';
+import { FaUserCircle, FaSignOutAlt, FaRegRegistered, FaCheckCircle, FaArrowLeft } from 'react-icons/fa';
+import styles from './Login.module.css';
 
 export default function Login() {
   const [profile, setProfile] = useState(null);
+  const [grades, setGrades] = useState(null);
+  const [loading, setLoading] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -12,6 +16,9 @@ export default function Login() {
       if (liff.isLoggedIn()) {
         const profileData = await liff.getProfile();
         setProfile(profileData);
+
+        // Store lineUserId in localStorage
+        localStorage.setItem('lineUserId', profileData.userId);
       } else {
         liff.login();
       }
@@ -20,6 +27,7 @@ export default function Login() {
 
   const handleLogout = () => {
     liff.logout();
+    localStorage.removeItem('lineUserId'); // Remove lineUserId from localStorage on logout
     window.location.reload();
   };
 
@@ -27,31 +35,74 @@ export default function Login() {
     router.push('/register');
   };
 
+  const handleCheckGrade = async () => {
+    if (!profile) return;
+
+    setLoading(true);
+    setGrades(null);
+
+    try {
+      const response = await fetch('/api/checkgrade', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          username: profile.displayName,
+          lineUserId: profile.userId,
+        }),
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        setGrades(data.grades);
+      } else {
+        setGrades({ error: 'Grade check failed or user not registered' });
+      }
+    } catch (error) {
+      setGrades({ error: 'An error occurred while checking grades' });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return profile ? (
-    <div className="login-container">
-      <div className="profile-info" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-        <img src={profile.pictureUrl} alt="Profile" width="100" style={{ borderRadius: '50%', marginBottom: '10px' }} />
-        <div className="message" style={{ padding: '10px', background: '#ddd', textAlign: 'center' }}>
-          <p>Hello <strong>{profile.displayName}</strong></p>
-          <p>UID: {profile.userId}</p>
+    <div className={styles.loginContainer}>
+      <div className={styles.profileCard}>
+        <div className={styles.profileHeader}>
+          <img src={profile.pictureUrl} alt="Profile" className={styles.profileImage} />
+          <div className={styles.profileInfo}>
+            <p className={styles.profileName}>Hello, <strong>{profile.displayName}</strong></p>
+            <p className={styles.profileId}>UID: {profile.userId}</p>
+          </div>
         </div>
-      </div>
-      <div style={{ marginTop: '20px', display: 'flex', justifyContent: 'center', gap: '10px' }}>
-        <button onClick={handleLogout} style={buttonStyle}>Logout</button>
-        <button onClick={navigateToRegister} style={buttonStyle}>Go to Register</button>
+        <div className={styles.buttonGroup}>
+          <button className={`${styles.btn} ${styles.btnLogout}`} onClick={handleLogout}>
+            <FaSignOutAlt className={styles.icon} /> Logout
+          </button>
+          <button className={`${styles.btn} ${styles.btnRegister}`} onClick={navigateToRegister}>
+            <FaRegRegistered className={styles.icon} /> Go to Register
+          </button>
+          <button
+            className={`${styles.btn} ${styles.btnCheckGrade}`}
+            onClick={handleCheckGrade}
+            disabled={loading}
+          >
+            {loading ? 'Checking...' : <><FaCheckCircle className={styles.icon} /> Check Grade</>}
+          </button>
+        </div>
+        {grades && (
+          <div className={styles.gradesResult}>
+            {grades.error ? (
+              <p className={styles.error}>{grades.error}</p>
+            ) : (
+              <pre>{JSON.stringify(grades, null, 2)}</pre>
+            )}
+          </div>
+        )}
       </div>
     </div>
   ) : (
-    <p>Loading...</p>
+    <div className={styles.loading}>
+      <p>Loading...</p>
+    </div>
   );
 }
-
-const buttonStyle = {
-  padding: '10px 20px',
-  border: 'none',
-  borderRadius: '5px',
-  backgroundColor: '#0078FF',
-  color: '#fff',
-  cursor: 'pointer',
-  fontSize: '16px'
-};

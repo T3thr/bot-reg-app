@@ -1,0 +1,152 @@
+/* General page layout */
+
+.body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f5f7fb;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+  }
+  
+  /* Login container */
+  .loginContainer {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    padding: 20px;
+    background-color: #f5f7fb;
+  }
+  
+  .profileCard {
+    background-color: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 400px;
+    padding: 30px;
+    text-align: center;
+    transition: transform 0.3s ease;
+  }
+  
+  .profileCard:hover {
+    transform: scale(1.02);
+  }
+  
+  /* Profile header */
+  .profileHeader {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+  
+  .profileImage {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-bottom: 15px;
+  }
+  
+  .profileInfo {
+    font-size: 1.1rem;
+    color: #333;
+  }
+  
+  .profileName {
+    font-weight: bold;
+    color: #333;
+  }
+  
+  .profileId {
+    font-size: 0.9rem;
+    color: #888;
+  }
+  
+  /* Button group */
+  .buttonGroup {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 20px;
+  }
+  
+  .btn {
+    width: 48%;
+    padding: 12px;
+    font-size: 16px;
+    font-weight: 500;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: background-color 0.3s ease, transform 0.3s ease;
+  }
+  
+  .btn:hover {
+    transform: translateY(-3px);
+  }
+  
+  .btn:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+  }
+  
+  .btnLogout {
+    background-color: #e74c3c;
+    color: white;
+  }
+  
+  .btnLogout:hover {
+    background-color: #c0392b;
+  }
+  
+  .btnRegister {
+    background-color: #3498db;
+    color: white;
+  }
+  
+  .btnRegister:hover {
+    background-color: #2980b9;
+  }
+  
+  .btnCheckGrade {
+    background-color: #2ecc71;
+    color: white;
+  }
+  
+  .btnCheckGrade:hover {
+    background-color: #27ae60;
+  }
+  
+  .icon {
+    margin-right: 8px;
+  }
+  
+  /* Grades result display */
+  .gradesResult {
+    margin-top: 20px;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background-color: #f9f9f9;
+    font-family: 'Courier New', Courier, monospace;
+    color: #333;
+  }
+  
+  .error {
+    color: #e74c3c;
+    font-weight: bold;
+  }
+  
+  /* Loading state */
+  .loading {
+    text-align: center;
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: #555;
+  }
+  

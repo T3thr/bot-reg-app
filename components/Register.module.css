@@ -1,72 +1,73 @@
-/* Register.module.css */
 .container {
     display: flex;
-    flex-direction: column;
-    align-items: center;
     justify-content: center;
-    max-width: 400px;
-    margin: auto;
+    align-items: center;
+    height: 100vh;
+    background-color: #f5f5f5;
+  }
+  
+  .registerBox {
+    background-color: white;
     padding: 20px;
-    background-color: #f7f8fc;
-    border-radius: 10px;
+    border-radius: 8px;
+    width: 350px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    position: relative;
+  }
+  
+  .goBackButton {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background: none;
+    border: none;
+    cursor: pointer;
   }
   
   .title {
-    font-size: 24px;
-    color: #333;
-    margin-bottom: 10px;
+    text-align: center;
   }
   
   .subtitle {
-    font-size: 14px;
-    color: #666;
+    text-align: center;
     margin-bottom: 20px;
   }
   
   .form {
     display: flex;
     flex-direction: column;
-    width: 100%;
   }
   
   .input {
     padding: 10px;
     margin-bottom: 15px;
-    border: 1px solid #ddd;
     border-radius: 5px;
-    font-size: 16px;
+    border: 1px solid #ccc;
   }
   
   .button {
-    padding: 10px;
-    font-size: 16px;
-    color: #fff;
-    background-color: #0078FF;
+    padding: 12px;
+    background-color: #2196f3;
+    color: white;
     border: none;
     border-radius: 5px;
     cursor: pointer;
-    transition: background-color 0.3s;
   }
   
   .button:disabled {
-    background-color: #aaa;
-  }
-  
-  .button:hover:not(:disabled) {
-    background-color: #005BB5;
+    background-color: #ccc;
   }
   
   .message {
+    text-align: center;
     margin-top: 15px;
-    font-size: 14px;
   }
   
   .success {
-    color: #28a745;
+    color: green;
   }
   
   .error {
-    color: #dc3545;
+    color: red;
   }
   

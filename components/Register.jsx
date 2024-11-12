@@ -1,6 +1,8 @@
-'use client'
-import { useState } from 'react';
+'use client';
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import styles from './Register.module.css';
+import { FaArrowLeft } from 'react-icons/fa';
 
 export default function Register() {
   const [username, setUsername] = useState('');
@@ -8,6 +10,15 @@ export default function Register() {
   const [lineUserId, setLineUserId] = useState('');
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
+  const router = useRouter();
+
+  useEffect(() => {
+    // Retrieve lineUserId from localStorage when the component mounts
+    const storedUserId = localStorage.getItem('lineUserId');
+    if (storedUserId) {
+      setLineUserId(storedUserId);
+    }
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -21,7 +32,7 @@ export default function Register() {
       });
 
       if (!response.ok) throw new Error('Error registering user.');
-      
+
       const data = await response.json();
       setMessage(data.success ? 'Registration successful!' : data.error || 'Registration failed.');
     } catch (error) {
@@ -32,43 +43,53 @@ export default function Register() {
     }
   };
 
+  const goBackToLogin = () => {
+    router.push('/login');
+  };
+
   return (
     <div className={styles.container}>
-      <h1 className={styles.title}>Join Grade Tracker</h1>
-      <p className={styles.subtitle}>Enter your credentials to start tracking your grades.</p>
-
-      <form onSubmit={handleSubmit} className={styles.form}>
-        <input
-          type="text"
-          placeholder="Username"
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
-          className={styles.input}
-          required
-        />
-        <input
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          className={styles.input}
-          required
-        />
-        <input
-          type="text"
-          placeholder="LINE User ID"
-          value={lineUserId}
-          onChange={(e) => setLineUserId(e.target.value)}
-          className={styles.input}
-          required
-        />
-
-        <button type="submit" className={styles.button} disabled={loading}>
-          {loading ? 'Registering...' : 'Register'}
+      <div className={styles.registerBox}>
+        <button className={styles.goBackButton} onClick={goBackToLogin}>
+          <FaArrowLeft className={styles.icon} /> Back to Login
         </button>
-      </form>
+        <h1 className={styles.title}>Join Grade Tracker</h1>
+        <p className={styles.subtitle}>Enter your credentials to start tracking your grades.</p>
 
-      {message && <p className={`${styles.message} ${message.includes('successful') ? styles.success : styles.error}`}>{message}</p>}
+        <form onSubmit={handleSubmit} className={styles.form}>
+          <input
+            type="text"
+            placeholder="Username"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            className={styles.input}
+            required
+          />
+          <input
+            type="password"
+            placeholder="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className={styles.input}
+            required
+          />
+          <input
+            type="text"
+            placeholder="LINE User ID"
+            value={lineUserId}
+            onChange={(e) => setLineUserId(e.target.value)} // Allow change if needed
+            className={styles.input}
+            disabled // Lock the input
+            required
+          />
+
+          <button type="submit" className={styles.button} disabled={loading}>
+            {loading ? 'Registering...' : 'Register'}
+          </button>
+        </form>
+
+        {message && <p className={`${styles.message} ${message.includes('successful') ? styles.success : styles.error}`}>{message}</p>}
+      </div>
     </div>
   );
 }
