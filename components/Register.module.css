@@ -76,7 +76,7 @@
     border-color: #ff6b81;
   }
   
-  button {
+  .button {
     padding: 14px;
     font-size: 16px;
     font-weight: 500;
@@ -89,12 +89,12 @@
     margin-top: 15px;
   }
   
-  button:hover {
+  .button:hover {
     background-color: #ff4d6f;
     transform: scale(1.05);
   }
   
-  button:disabled {
+  .button:disabled {
     background-color: #ff9f9f;
     cursor: not-allowed;
   }
