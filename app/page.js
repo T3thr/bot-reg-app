@@ -3,30 +3,28 @@
 import { useState } from 'react';
 
 export default function HomePage() {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [lineToken, setLineToken] = useState('');
-  const [message, setMessage] = useState('');
-  const [loading, setLoading] = useState(false);
+  const [username, setUsername] = useState('')
+  const [password, setPassword] = useState('')
+  const [lineToken, setLineToken] = useState('')
+  const [message, setMessage] = useState('')
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-
-    const res = await fetch('/api/register', {
+    e.preventDefault()
+    
+    const response = await fetch('/api/register', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ username, password, lineToken }),
-    });
-
-    const data = await res.json();
-    setLoading(false);
+    })
+    
+    const data = await response.json()
+    
     if (data.success) {
-      setMessage('Registration successful! You can now track your grades.');
+      setMessage('Registration successful! You will start receiving notifications.')
     } else {
-      setMessage('Error: ' + data.error);
+      setMessage('Error: ' + data.error)
     }
-  };
+  }
 
   return (
     <div className="page-container">
