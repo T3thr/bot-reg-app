@@ -35,25 +35,22 @@ export default function Login() {
 
   const handleCheckGrade = async () => {
     if (!profile) return;
-
+  
     setLoading(true);
     setGrades(null);
-
+  
     try {
-      const response = await fetch('/api/checkgrades', {
+      const response = await fetch('/api/checkgrade', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          username: profile.displayName,
-          lineUserId: profile.userId,
-        }),
+        body: JSON.stringify({ lineUserId: profile.userId }),
       });
-
+  
       const data = await response.json();
       if (data.success) {
         setGrades(data.grades);
       } else {
-        setGrades({ error: 'Grade check failed or user not registered' });
+        setGrades({ error: data.error || 'Grade check failed or user not registered' });
       }
     } catch (error) {
       setGrades({ error: 'An error occurred while checking grades' });
@@ -61,7 +58,7 @@ export default function Login() {
       setLoading(false);
     }
   };
-
+  
   return profile ? (
     <div className={styles.loginContainer}>
       <div className={styles.profileCard}>

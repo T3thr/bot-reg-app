@@ -26,16 +26,16 @@ export default function Register() {
     setLoading(true);
     setMessage('');
     setMessageType('');
-
+  
     try {
       const response = await fetch('/api/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password, lineUserId }),
       });
-
+  
       const data = await response.json();
-      
+  
       if (data.success) {
         setMessage('Registration successful!');
         setMessageType('success');

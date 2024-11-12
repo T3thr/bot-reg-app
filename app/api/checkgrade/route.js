@@ -1,6 +1,7 @@
 import puppeteer from 'puppeteer';
 import fs from 'fs';
 import path from 'path';
+import mongodbConnect from '@/backend/lib/mongodb';
 
 const USER_STATE_FILE = path.resolve('user_state.json');
 
@@ -15,6 +16,12 @@ const loadUserState = () => {
 // Save user state (new grades)
 const saveUserState = (state) => {
   fs.writeFileSync(USER_STATE_FILE, JSON.stringify(state, null, 2));
+};
+
+// Fetch user credentials from the database based on lineUserId
+const getUserCredentials = async (lineUserId) => {
+  const user = await db.collection('users').findOne({ lineUserId });
+  return user ? { username: user.username, password: user.password } : null;
 };
 
 const scrapeGrades = async (username, password) => {
@@ -68,17 +75,22 @@ const scrapeGrades = async (username, password) => {
 
 export default async function handler(req, res) {
   if (req.method === 'POST') {
-    const { username, lineUserId } = req.body;
+    const { lineUserId } = req.body;
 
-    // Get grades by scraping
+    // Fetch credentials from database
+    const credentials = await getUserCredentials(lineUserId);
+    if (!credentials) {
+      return res.status(404).json({ success: false, error: 'User not found' });
+    }
+
     try {
-      const grades = await scrapeGrades(username, 'your_password_here'); // Provide the user's password here or request it
+      const grades = await scrapeGrades(credentials.username, credentials.password);
       const oldState = loadUserState();
-      
-      // Compare grades (optional step)
+
+      // Check if grades have changed
       const stateChanged = JSON.stringify(oldState) !== JSON.stringify(grades);
       if (stateChanged) {
-        saveUserState(grades); // Save new state
+        saveUserState(grades); // Save the new state
       }
 
       res.status(200).json({ success: true, grades });
