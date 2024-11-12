@@ -5,7 +5,7 @@ import { useState } from 'react';
 export default function HomePage() {
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
-  const [lineToken, setLineToken] = useState('')
+  const [lineUserId, setLineUserId] = useState('')
   const [message, setMessage] = useState('')
 
   const handleSubmit = async (e) => {
@@ -14,7 +14,7 @@ export default function HomePage() {
     const response = await fetch('/api/register', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username, password, lineToken }),
+      body: JSON.stringify({ username, password, lineUserId }),
     })
     
     const data = await response.json()
@@ -54,18 +54,18 @@ export default function HomePage() {
             />
           </div>
           <div className="input-group">
-            <label htmlFor="lineToken">LINE Notify Token</label>
+            <label htmlFor="lineUserId">LINE User ID</label>
             <input
-              id="lineToken"
+              id="lineUserId"
               type="text"
-              placeholder="Enter your LINE Notify token"
-              value={lineToken}
-              onChange={(e) => setLineToken(e.target.value)}
+              placeholder="Enter your LINE User ID"
+              value={lineUserId}
+              onChange={(e) => setLineUserId(e.target.value)}
               required
             />
           </div>
-          <button type="submit" className="submit-btn" disabled={loading}>
-            {loading ? 'Registering...' : 'Register'}
+          <button type="submit" className="submit-btn">
+            Register
           </button>
         </form>
         {message && <p className="message">{message}</p>}

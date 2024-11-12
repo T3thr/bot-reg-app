@@ -1,27 +1,32 @@
 // app/api/checkGrade/route.js
-import { exec } from 'child_process'
+import bcrypt from 'bcryptjs'
 import mongodbConnect from '@/backend/lib/mongodb'
 import User from '@/backend/models/User'
 import { NextResponse } from 'next/server'
 
-mongodbConnect()
-
 export async function POST(req) {
-  const { username } = await req.json()
+    await mongodbConnect();
 
-  // Fetch user details from the database
-  const user = await User.findOne({ username })
-  if (!user) {
-    return NextResponse.json({ error: 'User not found' }, { status: 400 })
-  }
+    try {
+        const users = await User.find();
 
-  const { password, lineToken } = user
+        await Promise.all(users.map(async (user) => {
+            // Hash the password before sending it to the Heroku bot
+            const hashedPassword = await bcrypt.hash(user.password, 10);
+            
+            await fetch("https://your-heroku-app.herokuapp.com/check-grades", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    username: user.username,
+                    password: hashedPassword,
+                    lineToken: user.lineToken,
+                }),
+            });
+        }));
 
-  // Call the Python script with the necessary arguments
-  exec(`python3 /path/to/your/python/script.py ${username} ${password} ${lineToken}`, (error, stdout, stderr) => {
-    if (error) {
-      return NextResponse.json({ error: `Error: ${stderr}` }, { status: 500 })
+        return new Response(JSON.stringify({ success: true }), { status: 200 });
+    } catch (error) {
+        return new Response(JSON.stringify({ success: false, error: error.message }), { status: 500 });
     }
-    return NextResponse.json({ success: true, message: stdout })
-  })
 }
