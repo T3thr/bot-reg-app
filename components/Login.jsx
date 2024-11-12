@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import liff from '@line/liff';
 import { FaUserCircle, FaSignOutAlt, FaRegRegistered, FaCheckCircle, FaArrowLeft } from 'react-icons/fa';
+import axios from 'axios'; // Import axios
 import styles from './Login.module.css';
 
 export default function Login() {
@@ -40,22 +41,18 @@ export default function Login() {
     setGrades(null);
 
     try {
-      const response = await fetch('/api/checkgrades', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          username: profile.displayName,
-          lineUserId: profile.userId,
-        }),
+      const response = await axios.post('/api/checkgrades', {
+        username: profile.displayName,
+        lineUserId: profile.userId,
       });
 
-      const data = await response.json();
-      if (data.success) {
-        setGrades(data.grades);
+      if (response.data.success) {
+        setGrades(response.data.grades);
       } else {
         setGrades({ error: 'Grade check failed or user not registered' });
       }
     } catch (error) {
+      console.error('Error fetching grades:', error);
       setGrades({ error: 'An error occurred while checking grades' });
     } finally {
       setLoading(false);

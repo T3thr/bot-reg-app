@@ -1,6 +1,7 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import axios from 'axios';  // Import axios
 import styles from './Register.module.css';
 import { FaArrowLeft } from 'react-icons/fa';
 
@@ -28,24 +29,22 @@ export default function Register() {
     setMessageType('');
 
     try {
-      const response = await fetch('/api/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password, lineUserId }),
-      });
+      const response = await axios.post('/api/register', { username, password, lineUserId });
 
-      const data = await response.json();
-      
-      if (data.success) {
+      if (response.data.success) {
         setMessage('Registration successful!');
         setMessageType('success');
       } else {
-        setMessage(data.error || 'Registration failed.');
+        setMessage(response.data.error || 'Registration failed.');
         setMessageType('error');
       }
     } catch (error) {
       console.error(error);
-      setMessage('An error occurred. Please try again.');
+      if (error.response && error.response.data) {
+        setMessage(error.response.data.error || 'An error occurred. Please try again.');
+      } else {
+        setMessage('An error occurred. Please try again.');
+      }
       setMessageType('error');
     } finally {
       setLoading(false);
@@ -60,7 +59,7 @@ export default function Register() {
     <div className={styles.container}>
       <div className={styles.registerBox}>
         <button className={styles.goBackButton} onClick={goBackToLogin}>
-          <FaArrowLeft className={styles.icon} /> Back to Login
+          <FaArrowLeft className={styles.icon} />
         </button>
         <h1 className={styles.title}>Join Grade Tracker</h1>
         <p className={styles.subtitle}>Enter your credentials to start tracking your grades.</p>
