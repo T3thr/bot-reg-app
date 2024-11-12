@@ -1,7 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import axios from 'axios';  // Import axios
 import styles from './Register.module.css';
 import { FaArrowLeft } from 'react-icons/fa';
 
@@ -29,22 +28,24 @@ export default function Register() {
     setMessageType('');
 
     try {
-      const response = await axios.post('/api/register', { username, password, lineUserId });
+      const response = await fetch('/api/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password, lineUserId }),
+      });
 
-      if (response.data.success) {
+      const data = await response.json();
+      
+      if (data.success) {
         setMessage('Registration successful!');
         setMessageType('success');
       } else {
-        setMessage(response.data.error || 'Registration failed.');
+        setMessage(data.error || 'Registration failed.');
         setMessageType('error');
       }
     } catch (error) {
       console.error(error);
-      if (error.response && error.response.data) {
-        setMessage(error.response.data.error || 'An error occurred. Please try again.');
-      } else {
-        setMessage('An error occurred. Please try again.');
-      }
+      setMessage('An error occurred. Please try again.');
       setMessageType('error');
     } finally {
       setLoading(false);
