@@ -1,73 +1,128 @@
-.container {
+/* General body and layout styling */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+  
+  body {
+    font-family: 'Poppins', sans-serif; /* Cute, friendly font */
+    background-color: #f9f6ff; /* Soft lavender background */
     display: flex;
     justify-content: center;
     align-items: center;
     height: 100vh;
-    background-color: #f5f5f5;
+  }
+  
+  .container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    padding: 20px;
+    background-color: #f9f6ff;
   }
   
   .registerBox {
     background-color: white;
-    padding: 20px;
-    border-radius: 8px;
-    width: 350px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    border-radius: 15px;
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 380px;
+    padding: 30px;
+    text-align: center;
     position: relative;
   }
   
   .goBackButton {
     position: absolute;
-    top: 10px;
-    left: 10px;
-    background: none;
+    top: 20px;
+    left: 20px;
+    background: transparent;
     border: none;
+    font-size: 18px;
+    color: #ff6b81;
     cursor: pointer;
+    transition: color 0.3s;
+  }
+  
+  .goBackButton:hover {
+    color: #ff4d6f;
   }
   
   .title {
-    text-align: center;
+    font-size: 24px;
+    font-weight: 600;
+    color: #ff6b81; /* Soft pink color */
+    margin-bottom: 10px;
   }
   
   .subtitle {
-    text-align: center;
+    font-size: 16px;
+    color: #888;
     margin-bottom: 20px;
   }
   
   .form {
     display: flex;
     flex-direction: column;
+    gap: 15px;
   }
   
   .input {
-    padding: 10px;
-    margin-bottom: 15px;
-    border-radius: 5px;
-    border: 1px solid #ccc;
-  }
-  
-  .button {
     padding: 12px;
-    background-color: #2196f3;
-    color: white;
+    border: 2px solid #dcd7f5;
+    border-radius: 10px;
+    font-size: 16px;
+    outline: none;
+    transition: border-color 0.3s;
+  }
+  
+  .input:focus {
+    border-color: #ff6b81;
+  }
+  
+  button {
+    padding: 14px;
+    font-size: 16px;
+    font-weight: 500;
     border: none;
-    border-radius: 5px;
+    border-radius: 30px;
     cursor: pointer;
-  }
-  
-  .button:disabled {
-    background-color: #ccc;
-  }
-  
-  .message {
-    text-align: center;
+    background-color: #ff6b81;
+    color: white;
+    transition: background-color 0.3s, transform 0.2s;
     margin-top: 15px;
   }
   
+  button:hover {
+    background-color: #ff4d6f;
+    transform: scale(1.05);
+  }
+  
+  button:disabled {
+    background-color: #ff9f9f;
+    cursor: not-allowed;
+  }
+  
+  .message {
+    margin-top: 20px;
+    padding: 12px;
+    font-size: 14px;
+    border-radius: 8px;
+    text-align: center;
+    font-weight: bold;
+  }
+  
   .success {
-    color: green;
+    background-color: #d4edda;
+    color: #28a745;
+    border: 2px solid #28a745;
   }
   
   .error {
-    color: red;
+    background-color: #f8d7da;
+    color: #dc3545;
+    border: 2px solid #dc3545;
   }
   

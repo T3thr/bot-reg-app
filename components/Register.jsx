@@ -9,6 +9,7 @@ export default function Register() {
   const [password, setPassword] = useState('');
   const [lineUserId, setLineUserId] = useState('');
   const [message, setMessage] = useState('');
+  const [messageType, setMessageType] = useState(''); // For success/error message styling
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
@@ -23,6 +24,8 @@ export default function Register() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
+    setMessage('');
+    setMessageType('');
 
     try {
       const response = await fetch('/api/register', {
@@ -31,20 +34,26 @@ export default function Register() {
         body: JSON.stringify({ username, password, lineUserId }),
       });
 
-      if (!response.ok) throw new Error('Error registering user.');
-
       const data = await response.json();
-      setMessage(data.success ? 'Registration successful!' : data.error || 'Registration failed.');
+      
+      if (data.success) {
+        setMessage('Registration successful!');
+        setMessageType('success');
+      } else {
+        setMessage(data.error || 'Registration failed.');
+        setMessageType('error');
+      }
     } catch (error) {
       console.error(error);
       setMessage('An error occurred. Please try again.');
+      setMessageType('error');
     } finally {
       setLoading(false);
     }
   };
 
   const goBackToLogin = () => {
-    router.push('/login');
+    router.push('/');
   };
 
   return (
@@ -79,7 +88,7 @@ export default function Register() {
             value={lineUserId}
             onChange={(e) => setLineUserId(e.target.value)} // Allow change if needed
             className={styles.input}
-            disabled // Lock the input
+            disabled
             required
           />
 
@@ -88,7 +97,11 @@ export default function Register() {
           </button>
         </form>
 
-        {message && <p className={`${styles.message} ${message.includes('successful') ? styles.success : styles.error}`}>{message}</p>}
+        {message && (
+          <p className={`${styles.message} ${messageType === 'success' ? styles.success : styles.error}`}>
+            {message}
+          </p>
+        )}
       </div>
     </div>
   );

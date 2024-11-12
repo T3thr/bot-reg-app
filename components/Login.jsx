@@ -16,8 +16,6 @@ export default function Login() {
       if (liff.isLoggedIn()) {
         const profileData = await liff.getProfile();
         setProfile(profileData);
-
-        // Store lineUserId in localStorage
         localStorage.setItem('lineUserId', profileData.userId);
       } else {
         liff.login();
@@ -27,7 +25,7 @@ export default function Login() {
 
   const handleLogout = () => {
     liff.logout();
-    localStorage.removeItem('lineUserId'); // Remove lineUserId from localStorage on logout
+    localStorage.removeItem('lineUserId');
     window.location.reload();
   };
 
@@ -42,7 +40,7 @@ export default function Login() {
     setGrades(null);
 
     try {
-      const response = await fetch('/api/checkgrade', {
+      const response = await fetch('/api/checkgrades', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

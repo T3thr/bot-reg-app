@@ -1,61 +1,91 @@
-// app/api/checkgrade/route.js
 import puppeteer from 'puppeteer';
-import { NextResponse } from 'next/server';
-import mongodbConnect from '@/backend/lib/mongodb';
-import User from '@/backend/models/User';
-import { sendLineNotification } from '@/backend/utils/lineNotification';
+import fs from 'fs';
+import path from 'path';
 
-async function loginAndGetGrades(username, password) {
-  const browser = await puppeteer.launch({ headless: true });
+const USER_STATE_FILE = path.resolve('user_state.json');
+
+// Load user state (previous grades)
+const loadUserState = () => {
+  if (fs.existsSync(USER_STATE_FILE)) {
+    return JSON.parse(fs.readFileSync(USER_STATE_FILE));
+  }
+  return {};
+};
+
+// Save user state (new grades)
+const saveUserState = (state) => {
+  fs.writeFileSync(USER_STATE_FILE, JSON.stringify(state, null, 2));
+};
+
+const scrapeGrades = async (username, password) => {
+  const browser = await puppeteer.launch();
   const page = await browser.newPage();
-  
-  const loginUrl = 'https://reg9.nu.ac.th/registrar/login_ssl.asp?avs224389944=6';
-  const gradesUrl = 'https://reg9.nu.ac.th/registrar/grade.asp?avs224389636=41';
-  const semesterGrades = {};
-  
-  await page.goto(loginUrl);
+
+  // Login to the portal
+  await page.goto('https://reg9.nu.ac.th/registrar/login_ssl.asp?avs224389944=6');
   await page.type('input[name="f_uid"]', username);
   await page.type('input[name="f_pwd"]', password);
   await page.keyboard.press('Enter');
   await page.waitForNavigation();
 
-  await page.goto(gradesUrl);
-  
-  const tables = await page.$$('table[border="0"][width="70%"][cellspacing="2"][cellpadding="0"]');
-  
-  for (let i = 0; i < tables.length; i++) {
-    const semesterName = `semester${i + 1}`;
-    const subjects = await tables[i].$$('tr[valign="TOP"]');
-    semesterGrades[semesterName] = { totalSubjects: subjects.length, gradedSubjects: 0, eValSubjects: 0, subjects: [] };
+  // Scrape grade data from the page
+  await page.goto('https://reg9.nu.ac.th/registrar/grade.asp?avs224389636=41');
+  const grades = await page.evaluate(() => {
+    let semesterGrades = {};
+    let semesterCounter = 1;
+    const tables = document.querySelectorAll('table[border="0"][width="70%"]');
 
-    for (const subject of subjects) {
-      const grade = await subject.$eval('td[width="60"][align="LEFT"] font', el => el.innerText.trim());
-      const isEval = await subject.$('span[style="color:#92a8d1;background-color:red"]');
+    tables.forEach((table) => {
+      const semesterName = `semester${semesterCounter}`;
+      semesterGrades[semesterName] = { totalSubjects: 0, gradedSubjects: 0, eValSubjects: 0, subjects: [] };
       
-      semesterGrades[semesterName].subjects.push(isEval ? 'e-val' : grade);
-      if (isEval) semesterGrades[semesterName].eValSubjects += 1;
-      if (grade) semesterGrades[semesterName].gradedSubjects += 1;
-    }
-  }
+      const rows = table.querySelectorAll('tr[valign="TOP"]');
+      rows.forEach((row) => {
+        const gradeField = row.querySelector('td[width="60"][align="LEFT"] font');
+        const gradeText = gradeField ? gradeField.textContent.trim() : '';
+        
+        if (gradeText) {
+          if (gradeText.includes('e-val')) {
+            semesterGrades[semesterName].eValSubjects++;
+            semesterGrades[semesterName].subjects.push('e-val');
+          } else {
+            semesterGrades[semesterName].gradedSubjects++;
+            semesterGrades[semesterName].subjects.push(gradeText);
+          }
+          semesterGrades[semesterName].totalSubjects++;
+        }
+      });
+
+      semesterCounter++;
+    });
+
+    return semesterGrades;
+  });
 
   await browser.close();
-  return semesterGrades;
-}
+  return grades;
+};
 
-export async function POST(req) {
-  const { username, password, lineUserId } = await req.json();
-  
-  try {
-    await mongodbConnect();
-    const user = await User.findOne({ lineUserId });
-    if (!user) return NextResponse.json({ error: 'User not registered' }, { status: 403 });
+export default async function handler(req, res) {
+  if (req.method === 'POST') {
+    const { username, lineUserId } = req.body;
 
-    const grades = await loginAndGetGrades(username, password);
-    await sendLineNotification(lineUserId, 'Grade check complete.', grades);
-    
-    return NextResponse.json({ success: true, grades });
-  } catch (error) {
-    console.error('Grade check error:', error);
-    return NextResponse.json({ error: 'Error checking grades' }, { status: 500 });
+    // Get grades by scraping
+    try {
+      const grades = await scrapeGrades(username, 'your_password_here'); // Provide the user's password here or request it
+      const oldState = loadUserState();
+      
+      // Compare grades (optional step)
+      const stateChanged = JSON.stringify(oldState) !== JSON.stringify(grades);
+      if (stateChanged) {
+        saveUserState(grades); // Save new state
+      }
+
+      res.status(200).json({ success: true, grades });
+    } catch (error) {
+      res.status(500).json({ success: false, error: 'Failed to scrape grades.' });
+    }
+  } else {
+    res.status(405).json({ success: false, error: 'Method not allowed' });
   }
 }
