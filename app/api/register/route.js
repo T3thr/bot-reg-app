@@ -1,22 +1,25 @@
+import { NextResponse } from 'next/server';
 import mongodbConnect from '@/backend/lib/mongodb';
 import User from '@/backend/models/User';
-import bcrypt from 'bcryptjs';
-import { NextResponse } from 'next/server';
-
-mongodbConnect();
 
 export async function POST(req) {
   try {
-    const { username, password } = await req.json();
-    const userExists = await User.findOne({ username });
-    if (userExists) return NextResponse.json({ success: false, message: 'Username already exists' });
+    await mongodbConnect();
+    const { username, password, lineUserId } = await req.json();
 
-    const hashedPassword = await bcrypt.hash(password, 10);
-    await new User({ username, password: hashedPassword }).save();
+    // Check if the user with the provided LINE User ID already exists
+    const existingUser = await User.findOne({ lineUserId });
+    if (existingUser) {
+      return NextResponse.json({ error: 'User already registered.' }, { status: 400 });
+    }
 
-    return NextResponse.json({ success: true, message: 'Registration successful!' });
+    // Create a new user in the database
+    const newUser = new User({ username, password, lineUserId });
+    await newUser.save();
+
+    return NextResponse.json({ success: true });
   } catch (error) {
     console.error('Registration error:', error);
-    return NextResponse.json({ success: false, message: 'Registration failed' });
+    return NextResponse.json({ error: 'Error registering user.' }, { status: 500 });
   }
 }
