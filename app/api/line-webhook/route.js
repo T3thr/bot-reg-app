@@ -1,6 +1,6 @@
 // app/api/line-webhook/route.js
 import { NextResponse } from 'next/server';
-import { sendLineNotification } from '@/utils/lineNotification';
+import { sendLineNotification } from '@/backend/utils/lineNotification';
 import mongodbConnect from '@/backend/lib/mongodb';
 import User from '@/backend/models/User';
 
