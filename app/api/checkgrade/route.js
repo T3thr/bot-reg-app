@@ -3,7 +3,7 @@ import puppeteer from 'puppeteer';
 import { NextResponse } from 'next/server';
 import mongodbConnect from '@/backend/lib/mongodb';
 import User from '@/backend/models/User';
-import { sendLineNotification } from '@/utils/lineNotification';
+import { sendLineNotification } from '@/backend/utils/lineNotification';
 
 async function loginAndGetGrades(username, password) {
   const browser = await puppeteer.launch({ headless: true });
