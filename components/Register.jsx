@@ -1,59 +1,60 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import axios from 'axios';
 import styles from './Register.module.css';
 import { FaArrowLeft } from 'react-icons/fa';
 
 export default function Register() {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [lineUserId, setLineUserId] = useState('');
-  const [message, setMessage] = useState('');
-  const [messageType, setMessageType] = useState('');
-  const [loading, setLoading] = useState(false);
-  const router = useRouter();
-  const searchParams = useSearchParams();
-
-  useEffect(() => {
-    const storedUserId = localStorage.getItem('lineUserId');
-    const code = searchParams.get('code');
-    const state = searchParams.get('state');
-    if (storedUserId) {
-      setLineUserId(storedUserId);
-    }
-  }, [searchParams]);
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setMessage('');
-    setMessageType('');
-
-    try {
-      const response = await axios.post('/api/register', {
-        username,
-        password,
-        lineUserId,
-      });
-
-      if (response.status === 201) {
-        setMessage('Registration successful!');
-        setMessageType('success');
-      } else {
-        setMessage(response.data.error || 'Registration failed.');
-        setMessageType('error');
+    const [username, setUsername] = useState('');
+    const [password, setPassword] = useState('');
+    const [lineUserId, setLineUserId] = useState('');
+    const [message, setMessage] = useState('');
+    const [messageType, setMessageType] = useState('');
+    const [loading, setLoading] = useState(false);
+    const router = useRouter();
+    const searchParams = useSearchParams();
+  
+    useEffect(() => {
+      const storedUserId = localStorage.getItem('lineUserId');
+      if (storedUserId) {
+        setLineUserId(storedUserId);
       }
-    } catch (error) {
-      setMessage(error.response?.data?.error || 'An error occurred. Please try again.');
-      setMessageType('error');
-    } finally {
-      setLoading(false);
-    }
-  };
+    }, []);
+  
+    const handleSubmit = async (e) => {
+      e.preventDefault();
+      setLoading(true);
+      setMessage('');
+      setMessageType('');
+  
+      try {
+        const response = await fetch('/api/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, password, lineUserId })
+        });
+  
+        if (response.ok) {
+          setMessage('Registration successful!');
+          setMessageType('success');
+          // Redirect back to login with the query parameters
+          const queryParams = searchParams.toString();
+          router.push(`/?${queryParams}`);
+        } else {
+          const errorData = await response.json();
+          setMessage(errorData.error || 'Registration failed.');
+          setMessageType('error');
+        }
+      } catch (error) {
+        setMessage('An error occurred during registration.');
+        setMessageType('error');
+      } finally {
+        setLoading(false);
+      }
+    };
 
   const goBackToLogin = () => {
-    router.push(`/?${searchParams.toString()}`);
+    router.push('/');
   };
 
   return (
@@ -86,9 +87,8 @@ export default function Register() {
             type="text"
             placeholder="LINE User ID"
             value={lineUserId}
-            onChange={(e) => setLineUserId(e.target.value)}
+            onChange={(e) => setLineUserId(e.target.value)} // Allow change if needed
             className={styles.input}
-            disabled
             required
           />
 
