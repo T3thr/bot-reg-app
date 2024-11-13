@@ -36,7 +36,7 @@ export default function Register() {
       const res = await fetch(`/api/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password, lineUserId }),
+        body: JSON.stringify({ username, password  }),
       });
   
       const data = await res.json();
@@ -91,14 +91,7 @@ export default function Register() {
             className={styles.input}
             required
           />
-          <input
-            type="text"
-            placeholder="LINE User ID"
-            value={lineUserId}
-            onChange={(e) => setLineUserId(e.target.value)} // Allow change if needed
-            className={styles.input}
-            required
-          />
+
 
           <button type="submit" className={styles.button} disabled={loading}>
             {loading ? 'Registering...' : 'Register'}
