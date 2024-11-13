@@ -28,23 +28,29 @@ export default function Register() {
     setMessageType('');
   
     try {
-    const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/register`, {
+      const response = await fetch('/api/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password, lineUserId }),
-    });          
-  
-      const data = await response.json();
-  
-      if (data.success) {
-        setMessage('Registration successful!');
-        setMessageType('success');
-      } else {
-        setMessage(data.error || 'Registration failed.');
+      });
+
+      // Check for successful status code and parse JSON
+      if (!response.ok) {
+        const errorData = await response.json();
+        setMessage(errorData.error || 'Registration failed.');
         setMessageType('error');
+      } else {
+        const data = await response.json();
+        if (data.success) {
+          setMessage('Registration successful!');
+          setMessageType('success');
+        } else {
+          setMessage(data.error || 'Registration failed.');
+          setMessageType('error');
+        }
       }
     } catch (error) {
-      console.error(error);
+      console.error('Fetch error:', error);
       setMessage('An error occurred. Please try again.');
       setMessageType('error');
     } finally {

@@ -1,3 +1,4 @@
+// app/api/register/route.js
 import { NextResponse } from 'next/server';
 import mongodbConnect from '@/backend/lib/mongodb';
 import User from '@/backend/models/User';
@@ -10,7 +11,7 @@ export async function POST(req) {
     // Check if the user with the provided LINE User ID already exists
     const existingUser = await User.findOne({ lineUserId });
     if (existingUser) {
-      return NextResponse.json({ error: 'User already registered.' }, { status: 401 });
+      return NextResponse.json({ success: false, error: 'User already registered.' }, { status: 409 });
     }
 
     // Create a new user in the database
@@ -20,6 +21,6 @@ export async function POST(req) {
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error('Registration error:', error);
-    return NextResponse.json({ error: 'Error registering user.' }, { status: 500 });
+    return NextResponse.json({ success: false, error: 'Error registering user.' }, { status: 500 });
   }
 }
