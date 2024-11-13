@@ -10,6 +10,7 @@ export default async function RootLayout({ children }) {
   await mongodbConnect()
   return (
     <html lang="en">
+      <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/versions/2.22.3/sdk.js"></script>
       <body>
 
         {children}
