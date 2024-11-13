@@ -100,7 +100,6 @@ export default function Register() {
             value={lineUserId}
             onChange={(e) => setLineUserId(e.target.value)} // Allow change if needed
             className={styles.input}
-            disabled
             required
           />
 
