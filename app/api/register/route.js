@@ -1,29 +1,28 @@
-const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setMessage('');
-    setMessageType('');
-  
+import { NextResponse } from 'next/server';
+import mongodbConnect from '@/backend/lib/mongodb';
+import User from '@/backend/models/User';
+
+export async function POST(req, res) {
+    await mongodbConnect();
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/register`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password, lineUserId }),
-      });
+      const { username, password, lineUserId } = await req.json();
+      const existingUser = await User.findOne({ lineUserId });
   
-      const data = await res.json();
-      if (res.ok) {
-        setMessage('Registration successful!');
-        setMessageType('success');
-      } else {
-        setMessage(data.error || 'Registration failed.');
-        setMessageType('error');
+      if (existingUser) {
+        return new Response(JSON.stringify({ error: 'User already registered.' }), { status: 400 });
       }
+  
+      const newUser = new User({ username, password, lineUserId });
+      await newUser.save();
+  
+      return new Response(JSON.stringify({ success: true }), { status: 201 });
     } catch (error) {
-      setMessage('An unexpected error occurred.');
-      setMessageType('error');
-    } finally {
-      setLoading(false);
+      console.error('Error registering user:', error);
+      return new Response(JSON.stringify({ error: 'Error registering user.' }), { status: 500 });
     }
+  }
+  
+  export const config = {
+    runtime: 'experimental-edge', // Adjust if necessary based on your Vercel configuration
   };
   
