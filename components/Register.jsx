@@ -9,13 +9,16 @@ export default function Register() {
   const [password, setPassword] = useState('');
   const [lineUserId, setLineUserId] = useState('');
   const [message, setMessage] = useState('');
-  const [messageType, setMessageType] = useState('');
+  const [messageType, setMessageType] = useState(''); // For success/error message styling
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
+    // Retrieve lineUserId from localStorage when the component mounts
     const storedUserId = localStorage.getItem('lineUserId');
-    if (storedUserId) setLineUserId(storedUserId);
+    if (storedUserId) {
+      setLineUserId(storedUserId);
+    }
   }, []);
 
   const handleSubmit = async (e) => {
@@ -23,32 +26,44 @@ export default function Register() {
     setLoading(true);
     setMessage('');
     setMessageType('');
-
+  
     try {
       const response = await fetch('/api/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password, lineUserId }),
       });
-
+  
       if (!response.ok) {
-        const errorData = await response.json();
+        // If response is not JSON, handle it as text or HTML (usually an error page)
+        const errorData = await response.json().catch(() => {
+          return { error: 'Unexpected response format' };
+        });
         throw new Error(errorData.error || 'Registration failed.');
       }
-
+  
       const data = await response.json();
-      setMessage(data.success ? 'Registration successful!' : 'Registration failed.');
-      setMessageType(data.success ? 'success' : 'error');
+  
+      if (data.success) {
+        setMessage('Registration successful!');
+        setMessageType('success');
+      } else {
+        setMessage(data.error || 'Registration failed.');
+        setMessageType('error');
+      }
     } catch (error) {
       console.error(error);
-      setMessage(error.message || 'An error occurred. Please try again.');
+      setMessage('An error occurred. Please try again.');
       setMessageType('error');
     } finally {
       setLoading(false);
     }
   };
+  
 
-  const goBackToLogin = () => router.push('/');
+  const goBackToLogin = () => {
+    router.push('/');
+  };
 
   return (
     <div className={styles.container}>
@@ -80,7 +95,7 @@ export default function Register() {
             type="text"
             placeholder="LINE User ID"
             value={lineUserId}
-            onChange={(e) => setLineUserId(e.target.value)}
+            onChange={(e) => setLineUserId(e.target.value)} // Allow change if needed
             className={styles.input}
             disabled
             required
