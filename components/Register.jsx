@@ -14,7 +14,6 @@ export default function Register() {
   const router = useRouter();
 
   useEffect(() => {
-    // Retrieve lineUserId from localStorage when the component mounts
     const storedUserId = localStorage.getItem('lineUserId');
     if (storedUserId) {
       setLineUserId(storedUserId);
@@ -58,7 +57,6 @@ export default function Register() {
     }
   };
   
-
   const goBackToLogin = () => {
     router.push('/');
   };
