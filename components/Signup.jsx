@@ -3,7 +3,6 @@
 import Link from "next/link";
 import React, { useState, useContext, useEffect } from "react";
 import AuthContext from "@/context/AuthContext";
-import { toast } from "react-toastify";
 
 const Signup = () => {
   const { error, signupUser, clearErrors } = useContext(AuthContext);
@@ -14,7 +13,7 @@ const Signup = () => {
 
   useEffect(() => {
     if (error) {
-      toast.error(error);
+      console.error("Error:", error); // Change toast.error to console.error
       clearErrors();
     }
   }, [error, clearErrors]);
@@ -25,7 +24,7 @@ const Signup = () => {
     
     // Warn if uppercase letters are found
     if (/[A-Z]/.test(value)) {
-      toast.warn("Please use lowercase letters for your email.");
+      console.warn("Please use lowercase letters for your email."); // Change toast.warn to console.warn
     }
   };
 
@@ -52,9 +51,8 @@ const Signup = () => {
             />
           </div>
 
-
           <div className="mb-4">
-          <label className="block mb-1">Username</label>
+            <label className="block mb-1">Username</label>
             <input
               className="appearance-none border border-gray-200 bg-gray-100 rounded-md py-2 px-3 hover:border-gray-400 focus:outline-none focus:border-gray-400 w-full"
               type="text"
