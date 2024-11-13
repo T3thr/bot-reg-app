@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import styles from './Register.module.css';
 import { FaArrowLeft } from 'react-icons/fa';
+import axios from 'axios';
 
 export default function Register() {
   const [username, setUsername] = useState('');
@@ -25,39 +26,30 @@ export default function Register() {
     setLoading(true);
     setMessage('');
     setMessageType('');
-    
+
     try {
-      const response = await fetch('/api/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password, lineUserId }),
+      const response = await axios.post('/api/register', {
+        username,
+        password,
+        lineUserId,
       });
-  
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => {
-          return { error: 'Unexpected response format' };
-        });
-        throw new Error(errorData.error || 'Registration failed.');
-      }
-  
-      const data = await response.json();
-      if (data.success) {
+
+      if (response.status === 201) {
         setMessage('Registration successful!');
         setMessageType('success');
       } else {
-        setMessage(data.error || 'Registration failed.');
+        setMessage(response.data.error || 'Registration failed.');
         setMessageType('error');
       }
     } catch (error) {
       console.error(error);
-      setMessage('An error occurred. Please try again.');
+      setMessage(error.response?.data?.error || 'An error occurred. Please try again.');
       setMessageType('error');
     } finally {
       setLoading(false);
     }
   };
-  
-  
+
   const goBackToLogin = () => {
     router.push('/');
   };
