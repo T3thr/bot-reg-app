@@ -6,13 +6,13 @@ export async function POST(req, res) {
     await mongodbConnect();
     try {
       const { username, password, lineUserId } = await req.json();
-
+      const existingUser = await User.findOne({ lineUserId });
   
       if (existingUser) {
         return new Response(JSON.stringify({ error: 'User already registered.' }), { status: 400 });
       }
   
-      const newUser = new User({ username, password });
+      const newUser = new User({ username, password, lineUserId });
       await newUser.save();
   
       return new Response(JSON.stringify({ success: true }), { status: 201 });
