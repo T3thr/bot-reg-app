@@ -6,11 +6,9 @@ import AuthContext from "@/context/AuthContext";
 import { toast } from "react-toastify";
 import { useRouter } from 'next/navigation';
 
-const Signup = () => {
+export default function Signup() {
   const { error, signupUser, clearErrors } = useContext(AuthContext);
-  const [name, setName] = useState("");
   const [username, setUsername] = useState("");
-  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [lineUserId, setLineUserId] = useState("");
   const router = useRouter();
@@ -27,72 +25,49 @@ const Signup = () => {
     const liffParams = JSON.parse(localStorage.getItem('liffParams'));
 
     if (storedUserId) setLineUserId(storedUserId);
-
   }, []);
-
-  const handleEmailChange = (e) => {
-    const value = e.target.value;
-    setEmail(value);
-    
-    // Warn if uppercase letters are found
-    if (/[A-Z]/.test(value)) {
-      toast.warn("Please use lowercase letters for your email.");
-    }
-  };
 
   const submitHandler = (e) => {
     e.preventDefault();
-    signupUser({ name, username, email, password, lineUserId });
+    signupUser({ username, password, lineUserId });
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gradient-to-r from-blue-500 to-purple-600">
-      <div style={{ maxWidth: "480px" }} className="mt-10 mb-20 p-4 md:p-7 bg-white rounded-lg shadow-lg">
-        <form onSubmit={submitHandler}>
-          <h2 className="mb-5 text-2xl font-semibold text-center">Create Account</h2>
+    <div className="flex items-center justify-center min-h-screen bg-gradient-to-r from-pink-200 to-purple-300">
+      <div style={{ maxWidth: "480px" }} className="mt-10 mb-20 p-6 md:p-8 bg-white rounded-3xl shadow-lg relative">
+        
+        {/* Cute illustration and background elements */}
+        <div className="absolute top-0 left-0 w-full h-full rounded-3xl bg-pink-100 opacity-30 z-0 pointer-events-none"></div>
+        <img
+          src="/images/cute-bunny.png"
+          alt="Cute bunny"
+          className="w-16 h-16 absolute -top-8 right-8 z-10"
+        />
+        
+        <form onSubmit={submitHandler} className="relative z-20">
+          <h2 className="mb-5 text-3xl font-bold text-center text-purple-800">
+            🎉 Join Grade Tracker 🎉
+          </h2>
+          <p className="text-center text-gray-500 mb-8">Start tracking your grades with a smile! 😊</p>
 
-          <div className="mb-4">
-            <label className="block mb-1">Name</label>
+          <div className="mb-6">
+            <label className="block mb-1 text-purple-700 font-semibold">Username</label>
             <input
-              className="appearance-none border border-gray-200 bg-gray-100 rounded-md py-2 px-3 hover:border-gray-400 focus:outline-none focus:border-gray-400 w-full"
+              className="appearance-none border-2 border-purple-200 bg-pink-50 rounded-full py-3 px-4 focus:border-purple-400 focus:outline-none w-full"
               type="text"
-              placeholder="Type your name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              required
-            />
-          </div>
-
-          <div className="mb-4">
-            <label className="block mb-1">Username</label>
-            <input
-              className="appearance-none border border-gray-200 bg-gray-100 rounded-md py-2 px-3 hover:border-gray-400 focus:outline-none focus:border-gray-400 w-full"
-              type="text"
-              placeholder="Type your username"
+              placeholder="Choose a username"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               required
             />
           </div>
 
-          <div className="mb-4">
-            <label className="block mb-1">Email</label>
+          <div className="mb-6">
+            <label className="block mb-1 text-purple-700 font-semibold">Password</label>
             <input
-              className="appearance-none border border-gray-200 bg-gray-100 rounded-md py-2 px-3 hover:border-gray-400 focus:outline-none focus:border-gray-400 w-full"
-              type="email"
-              placeholder="Type your email"
-              value={email}
-              onChange={handleEmailChange}
-              required
-            />
-          </div>
-
-          <div className="mb-4">
-            <label className="block mb-1">Password</label>
-            <input
-              className="appearance-none border border-gray-200 bg-gray-100 rounded-md py-2 px-3 hover:border-gray-400 focus:outline-none focus:border-gray-400 w-full"
+              className="appearance-none border-2 border-purple-200 bg-pink-50 rounded-full py-3 px-4 focus:border-purple-400 focus:outline-none w-full"
               type="password"
-              placeholder="Type your password"
+              placeholder="Create a password"
               minLength={6}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
@@ -100,12 +75,12 @@ const Signup = () => {
             />
           </div>
 
-          <div className="mb-4">
-            <label className="block mb-1">LINE User ID</label>
+          <div className="mb-6">
+            <label className="block mb-1 text-purple-700 font-semibold">LINE User ID</label>
             <input
-              className="appearance-none border border-gray-200 bg-gray-100 rounded-md py-2 px-3 hover:border-gray-400 focus:outline-none focus:border-gray-400 w-full"
+              className="appearance-none border-2 border-purple-200 bg-pink-50 rounded-full py-3 px-4 focus:border-purple-400 focus:outline-none w-full"
               type="text"
-              placeholder="LINE User ID"
+              placeholder="Enter your LINE User ID"
               value={lineUserId}
               onChange={(e) => setLineUserId(e.target.value)}
               required
@@ -114,17 +89,17 @@ const Signup = () => {
 
           <button
             type="submit"
-            className="my-2 px-4 py-2 text-center w-full inline-block text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 transition duration-200"
+            className="my-3 px-5 py-3 text-white bg-purple-600 rounded-full w-full font-semibold text-lg hover:bg-purple-700 transition duration-200 shadow-md"
           >
-            Sign up
+            🐰 Let's Get Started!
           </button>
 
-          <hr className="mt-4" />
+          <hr className="mt-8 border-gray-300" />
 
-          <p className="text-center mt-5">
+          <p className="text-center mt-6 text-gray-500">
             Already have an account?{" "}
-            <Link href="/signin" className="text-blue-500 hover:underline">
-              Sign in
+            <Link href="/signin" className="text-purple-600 font-semibold hover:underline">
+              Sign in here!
             </Link>
           </p>
         </form>
@@ -132,5 +107,3 @@ const Signup = () => {
     </div>
   );
 };
-
-export default Signup;

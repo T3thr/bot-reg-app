@@ -60,65 +60,6 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const loginUser = async ({ username, email, password }) => {
-    try {
-      setLoading(true);
-      const res = await nextAuthSignIn("credentials", {
-        redirect: false,
-        username,
-        email,
-        password,
-      });
-      setLoading(false);
-
-      if (res.error) {
-        toast.error(res.error);
-        return { success: false, message: res.error };
-      } else if (res.ok) {
-        await fetchUser(); // Update user and role after successful login
-        return { success: true };
-      }
-    } catch (error) {
-      setLoading(false);
-      const errorMessage = error.response?.data?.message || "Signin failed";
-      toast.error(errorMessage);
-      return { success: false, message: errorMessage };
-    }
-  };
-
-  // Adjusted adminSignIn function to work with options.js credentials for admin
-  const adminSignIn = async () => {
-    try {
-      setLoading(true);
-      const res = await nextAuthSignIn("credentials", {
-        redirect: false,
-        username: "Admin", // Must match the hardcoded username in options.js
-        password: "admin123", // Must match the hardcoded password in options.js
-      });
-      setLoading(false);
-
-      if (res.error) {
-        toast.error(res.error);
-        return { success: false, message: res.error };
-      }
-
-      if (res.ok) {
-        toast.success("Admin signin successful!", {
-          autoClose: 1000,
-          onClose: async () => {
-            await fetchUser(); // Update user and role after successful admin login
-            window.location.reload();
-          },
-        });
-        return { success: true };
-      }
-    } catch (error) {
-      setLoading(false);
-      const errorMessage = error.response?.data?.message || "Signin failed";
-      toast.error(errorMessage);
-      return { success: false, message: errorMessage };
-    }
-  };
 
   const clearErrors = () => {
     setError(null);
@@ -132,8 +73,6 @@ export const AuthProvider = ({ children }) => {
         error,
         loading,
         signupUser,
-        loginUser,
-        adminSignIn,
         setUser,
         clearErrors,
       }}
