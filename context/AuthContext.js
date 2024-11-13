@@ -3,7 +3,7 @@
 "use client";
 
 import axios from "axios";
-import { useRouter ,useSearchParams } from "next/navigation";
+import { useRouter  } from "next/navigation";
 import { createContext, useState, useEffect } from "react";
 import { toast } from "react-toastify";
 import { signIn as nextAuthSignIn, getSession } from "next-auth/react";
@@ -16,7 +16,6 @@ export const AuthProvider = ({ children }) => {
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
-  const searchParams = useSearchParams();
 
   // Function to go back to login page with query params
   const goBackToLogin = () => {
