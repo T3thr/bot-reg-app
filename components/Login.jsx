@@ -60,7 +60,7 @@ export default function Login() {
   
       const data = await response.json();
       if (data.success) {
-        setGrades(data.grades);
+        setGrades(data.notification);
       } else {
         setGrades({ error: data.error || 'Grade check failed or user not registered' });
       }
@@ -96,12 +96,17 @@ export default function Login() {
             {loading ? 'Checking...' : <><FaCheckCircle className={styles.icon} /> Check Grade</>}
           </button>
         </div>
+        
+        {/* Grade Results Section */}
         {grades && (
           <div className={styles.gradesResult}>
             {grades.error ? (
               <p className={styles.error}>{grades.error}</p>
             ) : (
-              <pre>{JSON.stringify(grades, null, 2)}</pre>
+              <div className={styles.resultContainer}>
+                <h2>Grade Status</h2>
+                <p>{grades}</p>
+              </div>
             )}
           </div>
         )}

@@ -8,9 +8,6 @@ const userSchema = new mongoose.Schema({
     type: String,
     unique: true,
   },
-  name: {
-    type: String,
-  },
   role: {
     type: String,
     default: "user",
