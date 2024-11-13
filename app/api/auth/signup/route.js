@@ -7,48 +7,36 @@ import { NextResponse } from "next/server";
 export async function POST(req) {
   await mongodbConnect();
 
-  const { name,username , email, password , lineUserId} = await req.json();
-
-  // Check if user already exists
-  const existingUser = await User.findOne({ email });
-  const existingUsername = await User.findOne({ username });
-  
-  if (existingUser) {
-    return NextResponse.json(
-      { message: "Email already registered" },
-      { status: 400 }
-    );
-  }
-
-  if (existingUsername) {
-    return NextResponse.json(
-      { message: "Username already taken" },
-      { status: 400 }
-    );
-  }
-
   try {
-    // Create new user (password will be hashed by the model's pre-save hook)
-    const user = await User.create({ name, username, email, password ,lineUserId });
-    
+    const { username, password, lineUserId } = await req.json();
 
-    return NextResponse.json({
-      user: {
-        id: user._id,
-        lineuserId : user.lineUserId,
-        name: user.name,
-        username: user.username,
-        email: user.email,
-        password: user.password,
-        role: 'user',
+    // Check if user already exists by username or lineUserId
+    const existingUser = await User.findOne({ $or: [{ username }, { lineUserId }] });
+
+    if (existingUser) {
+      const message = existingUser.username === username 
+        ? "Username already taken"
+        : "UserID already registered";
+      return NextResponse.json({ message }, { status: 400 });
+    }
+
+    // Create a new user and hash the password in User schema pre-save hook
+    const user = await User.create({ username, password, lineUserId });
+    return NextResponse.json(
+      {
+        user: {
+          id: user._id,
+          username: user.username,
+          password: user.password,
+          role: 'user',
+          lineUserId: user.lineUserId
+        },
       },
-    }, { status: 201 });
-    
+      { status: 201 }
+    );
 
   } catch (error) {
-    return NextResponse.json(
-      { message: "Error creating user" },
-      { status: 500 }
-    );
+    console.error("Error creating user:", error);
+    return NextResponse.json({ message: "Error creating user" }, { status: 500 });
   }
 }

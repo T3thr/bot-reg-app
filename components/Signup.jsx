@@ -38,11 +38,6 @@ export default function Signup() {
         
         {/* Cute illustration and background elements */}
         <div className="absolute top-0 left-0 w-full h-full rounded-3xl bg-pink-100 opacity-30 z-0 pointer-events-none"></div>
-        <img
-          src="/images/cute-bunny.png"
-          alt="Cute bunny"
-          className="w-16 h-16 absolute -top-8 right-8 z-10"
-        />
         
         <form onSubmit={submitHandler} className="relative z-20">
           <h2 className="mb-5 text-3xl font-bold text-center text-purple-800">

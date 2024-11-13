@@ -11,14 +11,6 @@ const userSchema = new mongoose.Schema({
   name: {
     type: String,
   },
-  email: {
-    type: String,
-    unique: true,
-  },
-  avatar: {
-    public_id: String,
-    url: String,
-  },
   role: {
     type: String,
     default: "user",

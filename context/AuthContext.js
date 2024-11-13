@@ -3,7 +3,7 @@
 "use client";
 
 import axios from "axios";
-import { useRouter } from "next/navigation";
+import { useRouter ,useSearchParams } from "next/navigation";
 import { createContext, useState, useEffect } from "react";
 import { toast } from "react-toastify";
 import { signIn as nextAuthSignIn, getSession } from "next-auth/react";
@@ -16,6 +16,14 @@ export const AuthProvider = ({ children }) => {
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+  const searchParams = useSearchParams();
+
+  // Function to go back to login page with query params
+  const goBackToLogin = () => {
+    const liffParams = JSON.parse(localStorage.getItem('liffParams'));
+    const queryString = new URLSearchParams(liffParams).toString();
+    router.push(`/?${queryString}`);
+  };
 
   // Fetch the current session and user data when the component mounts
   useEffect(() => {
@@ -40,16 +48,16 @@ export const AuthProvider = ({ children }) => {
     fetchUser();
   }, []);
 
-  const signupUser = async ({ name, username, email, password, lineUserId }) => {
+  const signupUser = async ({ username,  password, lineUserId }) => {
     try {
       setLoading(true);
-      const { data, status } = await axios.post("/api/auth/signup", { name, username, email, password,lineUserId });
+      const { data, status } = await axios.post("/api/auth/signup", { username, password, lineUserId });
       setLoading(false);
 
       if (status === 201) {
-        toast.success("Signup successful! Please sign in to continue.", {
+        toast.success("Signup successful! Go to Home Page soon.", {
           autoClose: 3000,
-          onClose: () => router.push("/signin"),
+          onClose: () => goBackToLogin(), // Call goBackToLogin when toast is closed
         });
         setUser(data.user); // Set user state after signup
       }
