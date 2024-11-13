@@ -1,3 +1,4 @@
+// app/api/register/route.js 
 import { NextResponse } from 'next/server';
 import mongodbConnect from '@/backend/lib/mongodb';
 import User from '@/backend/models/User';

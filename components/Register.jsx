@@ -26,7 +26,7 @@ export default function Register() {
     setLoading(true);
     setMessage('');
     setMessageType('');
-  
+    
     try {
       const response = await fetch('/api/register', {
         method: 'POST',
@@ -35,18 +35,13 @@ export default function Register() {
       });
   
       if (!response.ok) {
-        // Attempt to parse the response as JSON. If it fails, set a general error.
-        let errorData;
-        try {
-          errorData = await response.json();
-        } catch {
-          throw new Error('Unexpected response format.');
-        }
+        const errorData = await response.json().catch(() => {
+          return { error: 'Unexpected response format' };
+        });
         throw new Error(errorData.error || 'Registration failed.');
       }
   
       const data = await response.json();
-  
       if (data.success) {
         setMessage('Registration successful!');
         setMessageType('success');
@@ -55,7 +50,7 @@ export default function Register() {
         setMessageType('error');
       }
     } catch (error) {
-      console.error('Submission error:', error);
+      console.error(error);
       setMessage('An error occurred. Please try again.');
       setMessageType('error');
     } finally {
