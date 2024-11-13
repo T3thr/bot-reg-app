@@ -31,14 +31,14 @@ export default function Register() {
     setLoading(true);
     setMessage('');
     setMessageType('');
-  
+
     try {
-      const res = await fetch('https://bot-reg-app.vercel.app/api/register', {  
+      const res = await fetch('/api/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password, lineUserId }),
       });
-  
+
       const data = await res.json();
       if (res.ok) {
         setMessage('Registration successful!');
@@ -54,7 +54,6 @@ export default function Register() {
       setLoading(false);
     }
   };
-  
 
   const goBackToLogin = () => {
     const liffParams = JSON.parse(localStorage.getItem('liffParams'));
