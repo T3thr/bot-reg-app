@@ -122,7 +122,5 @@ export default async function handler(req, res) {
       console.error('Grade scraping error:', error);
       res.status(500).json({ success: false, error: 'Failed to scrape grades.' });
     }
-  } else {
-    res.status(405).json({ success: false, error: 'Method not allowed' });
   }
 }
