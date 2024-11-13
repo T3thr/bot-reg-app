@@ -1,25 +1,28 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
+import axios from 'axios';
 import styles from './Register.module.css';
 import { FaArrowLeft } from 'react-icons/fa';
-import axios from 'axios';
 
 export default function Register() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [lineUserId, setLineUserId] = useState('');
   const [message, setMessage] = useState('');
-  const [messageType, setMessageType] = useState(''); // For success/error message styling
+  const [messageType, setMessageType] = useState('');
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+  const searchParams = useSearchParams();
 
   useEffect(() => {
     const storedUserId = localStorage.getItem('lineUserId');
+    const code = searchParams.get('code');
+    const state = searchParams.get('state');
     if (storedUserId) {
       setLineUserId(storedUserId);
     }
-  }, []);
+  }, [searchParams]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -28,7 +31,7 @@ export default function Register() {
     setMessageType('');
 
     try {
-      const response =  axios.post('/api/register', {
+      const response = await axios.post('/api/register', {
         username,
         password,
         lineUserId,
@@ -42,7 +45,6 @@ export default function Register() {
         setMessageType('error');
       }
     } catch (error) {
-      console.error(error);
       setMessage(error.response?.data?.error || 'An error occurred. Please try again.');
       setMessageType('error');
     } finally {
@@ -51,7 +53,7 @@ export default function Register() {
   };
 
   const goBackToLogin = () => {
-    router.push('/');
+    router.push(`/?${searchParams.toString()}`);
   };
 
   return (
@@ -84,7 +86,7 @@ export default function Register() {
             type="text"
             placeholder="LINE User ID"
             value={lineUserId}
-            onChange={(e) => setLineUserId(e.target.value)} // Allow change if needed
+            onChange={(e) => setLineUserId(e.target.value)}
             className={styles.input}
             disabled
             required
