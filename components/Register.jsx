@@ -1,60 +1,63 @@
-'use client'
-import { useEffect, useState, Suspense } from 'react';
+'use client';
+import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import styles from './Register.module.css';
 import { FaArrowLeft } from 'react-icons/fa';
 
 export default function Register() {
-    const [username, setUsername] = useState('');
-    const [password, setPassword] = useState('');
-    const [lineUserId, setLineUserId] = useState('');
-    const [message, setMessage] = useState('');
-    const [loading, setLoading] = useState(false);
-    const router = useRouter();
-    const searchParams = useSearchParams();
-  
-    // Retrieve URL parameters
-    const code = searchParams.get('code');
-    const state = searchParams.get('state');
-  
-    useEffect(() => {
-      const storedUserId = localStorage.getItem('lineUserId');
-      if (storedUserId) {
-        setLineUserId(storedUserId);
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [lineUserId, setLineUserId] = useState('');
+  const [message, setMessage] = useState('');
+  const [loading, setLoading] = useState(false);
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    const storedUserId = localStorage.getItem('lineUserId');
+    const liffParams = JSON.parse(localStorage.getItem('liffParams'));
+    if (storedUserId) setLineUserId(storedUserId);
+
+    // Check if query params exist to keep them in the URL
+    if (liffParams) {
+      const queryString = new URLSearchParams(liffParams).toString();
+      router.replace(`/register?${queryString}`);
+    }
+  }, []);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setMessage('');
+
+    try {
+      const res = await fetch('/api/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password, lineUserId }),
+      });
+
+      const data = await res.json();
+      if (res.ok) {
+        setMessage('Registration successful!');
+      } else {
+        setMessage(data.error || 'Registration failed.');
       }
-    }, []);
-  
-    const handleSubmit = async (e) => {
-      e.preventDefault();
-      setLoading(true);
-      setMessage('');
-  
-      try {
-        const response = await fetch('/api/register', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ username, password, lineUserId }),
-        });
-  
-        const data = await response.json();
-        if (response.ok) {
-          setMessage('Registration successful!');
-        } else {
-          setMessage(data.error || 'Registration failed.');
-        }
-      } catch (error) {
-        setMessage('An unexpected error occurred.');
-      } finally {
-        setLoading(false);
-      }
-    };
-  
-    const goBackToLogin = () => {
-      router.push(`/?code=${code}&state=${state}`);
-    };
+    } catch (error) {
+      setMessage('An unexpected error occurred.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const goBackToLogin = () => {
+    const liffParams = JSON.parse(localStorage.getItem('liffParams'));
+    const queryString = new URLSearchParams(liffParams).toString();
+    router.push(`/?${queryString}`);
+  };
+
 
   return (
-    <Suspense fallback={<p>Loading...</p>}>
     <div className={styles.container}>
       <div className={styles.registerBox}>
         <button className={styles.goBackButton} onClick={goBackToLogin}>
@@ -101,6 +104,5 @@ export default function Register() {
         )}
       </div>
     </div>
-    </Suspense>
   );
 }

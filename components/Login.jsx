@@ -1,8 +1,8 @@
-'use client'
-import { useEffect, useState, Suspense } from 'react';
+'use client';
+import { useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import liff from '@line/liff';
-import { FaSignOutAlt, FaRegRegistered, FaCheckCircle } from 'react-icons/fa';
+import { FaUserCircle, FaSignOutAlt, FaRegRegistered, FaCheckCircle } from 'react-icons/fa';
 import styles from './Login.module.css';
 
 export default function Login() {
@@ -12,11 +12,17 @@ export default function Login() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  // Retrieve initial URL parameters (code, state)
-  const code = searchParams.get('code');
-  const state = searchParams.get('state');
-
   useEffect(() => {
+    const code = searchParams.get('code');
+    const state = searchParams.get('state');
+    const liffClientId = searchParams.get('liffClientId');
+    const liffRedirectUri = searchParams.get('liffRedirectUri');
+
+    // Save parameters to localStorage to persist during navigation
+    if (code && state && liffClientId && liffRedirectUri) {
+      localStorage.setItem('liffParams', JSON.stringify({ code, state, liffClientId, liffRedirectUri }));
+    }
+
     liff.init({ liffId: process.env.NEXT_PUBLIC_LIFF_ID }).then(async () => {
       if (liff.isLoggedIn()) {
         const profileData = await liff.getProfile();
@@ -31,54 +37,82 @@ export default function Login() {
   const handleLogout = () => {
     liff.logout();
     localStorage.removeItem('lineUserId');
+    localStorage.removeItem('liffParams');
     window.location.reload();
   };
 
   const navigateToRegister = () => {
-    router.push(`/register?code=${code}&state=${state}`);
+    const liffParams = JSON.parse(localStorage.getItem('liffParams'));
+    const queryString = new URLSearchParams(liffParams).toString();
+    router.push(`/register?${queryString}`);
   };
+
 
   const handleCheckGrade = async () => {
     if (!profile) return;
+  
     setLoading(true);
     setGrades(null);
-
+  
     try {
       const response = await fetch('/api/checkgrade', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ lineUserId: profile.userId }),
       });
-
+  
       const data = await response.json();
-      if (data.success) setGrades(data.grades);
-      else setGrades({ error: data.error || 'Grade check failed or user not registered' });
+      if (data.success) {
+        setGrades(data.grades);
+      } else {
+        setGrades({ error: data.error || 'Grade check failed or user not registered' });
+      }
     } catch (error) {
       setGrades({ error: 'An error occurred while checking grades' });
     } finally {
       setLoading(false);
     }
   };
-
-  return (
-    <Suspense fallback={<p>Loading...</p>}>
-      {profile ? (
-        <div className={styles.loginContainer}>
-          <div className={styles.profileCard}>
-            <img src={profile.pictureUrl} alt="Profile" className={styles.profileImage} />
-            <p>Hello, <strong>{profile.displayName}</strong></p>
-            <p>UID: {profile.userId}</p>
-            <button onClick={handleLogout} className={styles.btnLogout}><FaSignOutAlt /> Logout</button>
-            <button onClick={navigateToRegister} className={styles.btnRegister}><FaRegRegistered /> Register</button>
-            <button onClick={handleCheckGrade} className={styles.btnCheckGrade} disabled={loading}>
-              {loading ? 'Checking...' : <><FaCheckCircle /> Check Grade</>}
-            </button>
+  
+  return profile ? (
+    <div className={styles.loginContainer}>
+      <div className={styles.profileCard}>
+        <div className={styles.profileHeader}>
+          <img src={profile.pictureUrl} alt="Profile" className={styles.profileImage} />
+          <div className={styles.profileInfo}>
+            <p className={styles.profileName}>Hello, <strong>{profile.displayName}</strong></p>
+            <p className={styles.profileId}>UID: {profile.userId}</p>
           </div>
-          {grades && (grades.error ? <p>{grades.error}</p> : <pre>{JSON.stringify(grades, null, 2)}</pre>)}
         </div>
-      ) : (
-        <p>Loading...</p>
-      )}
-    </Suspense>
+        <div className={styles.buttonGroup}>
+          <button className={`${styles.btn} ${styles.btnLogout}`} onClick={handleLogout}>
+            <FaSignOutAlt className={styles.icon} /> Logout
+          </button>
+          <button className={`${styles.btn} ${styles.btnRegister}`} onClick={navigateToRegister}>
+            <FaRegRegistered className={styles.icon} /> Go to Register
+          </button>
+          <button
+            className={`${styles.btn} ${styles.btnCheckGrade}`}
+            onClick={handleCheckGrade}
+            disabled={loading}
+          >
+            {loading ? 'Checking...' : <><FaCheckCircle className={styles.icon} /> Check Grade</>}
+          </button>
+        </div>
+        {grades && (
+          <div className={styles.gradesResult}>
+            {grades.error ? (
+              <p className={styles.error}>{grades.error}</p>
+            ) : (
+              <pre>{JSON.stringify(grades, null, 2)}</pre>
+            )}
+          </div>
+        )}
+      </div>
+    </div>
+  ) : (
+    <div className={styles.loading}>
+      <p>Loading...</p>
+    </div>
   );
 }
