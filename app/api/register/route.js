@@ -1,24 +1,23 @@
-// app/api/register/route.js
+import { NextResponse } from 'next/server';
 import mongodbConnect from '@/backend/lib/mongodb';
 import User from '@/backend/models/User';
 
-export async function POST(req, res) {
+export async function POST(req) {
+  await mongodbConnect();
   try {
-    await mongodbConnect();
     const { username, password, lineUserId } = await req.json();
-
     const existingUser = await User.findOne({ lineUserId });
+
     if (existingUser) {
-      res.status(400).json({ error: 'User already registered.' });
-      return;
+      return NextResponse.json({ error: 'User already registered.' }, { status: 400 });
     }
 
     const newUser = new User({ username, password, lineUserId });
     await newUser.save();
 
-    res.status(201).json({ success: true });
+    return NextResponse.json({ success: true }, { status: 201 });
   } catch (error) {
-    console.error('Registration error:', error);
-    res.status(500).json({ error: 'Error registering user.' });
+    console.error('Error registering user:', error);
+    return NextResponse.json({ error: 'Error registering user.' }, { status: 500 });
   }
 }

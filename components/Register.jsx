@@ -9,6 +9,7 @@ export default function Register() {
   const [password, setPassword] = useState('');
   const [lineUserId, setLineUserId] = useState('');
   const [message, setMessage] = useState('');
+  const [messageType, setMessageType] = useState(''); // Define messageType state
   const [loading, setLoading] = useState(false);
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -29,6 +30,7 @@ export default function Register() {
     e.preventDefault();
     setLoading(true);
     setMessage('');
+    setMessageType('');
 
     try {
       const res = await fetch('/api/register', {
@@ -40,11 +42,14 @@ export default function Register() {
       const data = await res.json();
       if (res.ok) {
         setMessage('Registration successful!');
+        setMessageType('success');
       } else {
         setMessage(data.error || 'Registration failed.');
+        setMessageType('error');
       }
     } catch (error) {
       setMessage('An unexpected error occurred.');
+      setMessageType('error');
     } finally {
       setLoading(false);
     }
@@ -55,7 +60,6 @@ export default function Register() {
     const queryString = new URLSearchParams(liffParams).toString();
     router.push(`/?${queryString}`);
   };
-
 
   return (
     <div className={styles.container}>
