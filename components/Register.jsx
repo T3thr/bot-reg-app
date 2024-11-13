@@ -33,9 +33,7 @@ export default function Register() {
   
 
   const goBackToLogin = () => {
-    // Clear any existing message before navigating back to login
-    setMessage('');
-    setMessageType('');
+    clearMessage();
     const liffParams = JSON.parse(localStorage.getItem('liffParams'));
     const queryString = new URLSearchParams(liffParams).toString();
     router.push(`/?${queryString}`);
