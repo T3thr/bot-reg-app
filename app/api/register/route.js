@@ -1,5 +1,6 @@
 // app/api/register/route.js
 import { NextResponse } from 'next/server';
+import bcrypt from 'bcryptjs'; // Import bcryptjs for password hashing
 import mongodbConnect from '@/backend/lib/mongodb';
 import User from '@/backend/models/User';
 
@@ -15,8 +16,11 @@ export async function POST(req) {
       return NextResponse.json({ error: 'User already registered.' }, { status: 400 });
     }
 
-    // Create a new user in the database
-    const newUser = new User({ username, password, lineUserId });
+    // Hash the password before saving it to the database
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // Create a new user in the database with the hashed password
+    const newUser = new User({ username, password: hashedPassword, lineUserId });
     await newUser.save();
 
     // Return success response with status 201 Created
