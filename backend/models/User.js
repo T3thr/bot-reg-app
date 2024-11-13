@@ -7,7 +7,6 @@ const userSchema = new mongoose.Schema({
   lineUserId: String,
   name: {
     type: String,
-    required: [true, "Please enter your name"],
   },
   email: {
     type: String,
