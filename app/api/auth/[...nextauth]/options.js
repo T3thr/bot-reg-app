@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import CredentialsProvider from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
 import User from "@/backend/models/User";
@@ -7,7 +9,7 @@ import bcrypt from "bcryptjs";
 import LoginActivity from "@/backend/models/LoginActivity";
 import mongoose from "mongoose";
 
-const options = {
+export const options = {
     providers: [
         CredentialsProvider({
             name: "Credentials",
