@@ -9,17 +9,20 @@ export default function Register() {
   const [password, setPassword] = useState('');
   const [lineUserId, setLineUserId] = useState('');
   const [message, setMessage] = useState('');
-  const [messageType, setMessageType] = useState(''); // Define messageType state
+  const [messageType, setMessageType] = useState('');
   const [loading, setLoading] = useState(false);
   const router = useRouter();
-  const searchParams = useSearchParams();
 
   useEffect(() => {
+    // Automatically fetch lineUserId from LIFF session
     const storedUserId = localStorage.getItem('lineUserId');
     const liffParams = JSON.parse(localStorage.getItem('liffParams'));
-    if (storedUserId) setLineUserId(storedUserId);
-
-    // Check if query params exist to keep them in the URL
+    if (storedUserId) {
+      setLineUserId(storedUserId); // Auto-populate lineUserId
+    } else {
+      router.push('/'); // Redirect to login if no userId
+    }
+    
     if (liffParams) {
       const queryString = new URLSearchParams(liffParams).toString();
       router.replace(`/register?${queryString}`);
@@ -28,17 +31,18 @@ export default function Register() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!lineUserId) return; // Ensure lineUserId is set
     setLoading(true);
     setMessage('');
     setMessageType('');
-  
+
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/register`, {
+      const res = await fetch(`/api/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password, lineUserId }),
+        body: JSON.stringify({ username, password, lineUserId }), // Send all in a single request
       });
-  
+
       const data = await res.json();
       if (res.ok) {
         setMessage('Registration successful!');
@@ -54,7 +58,6 @@ export default function Register() {
       setLoading(false);
     }
   };
-  
 
   const goBackToLogin = () => {
     const liffParams = JSON.parse(localStorage.getItem('liffParams'));
@@ -88,15 +91,6 @@ export default function Register() {
             className={styles.input}
             required
           />
-          <input
-            type="text"
-            placeholder="LINE User ID"
-            value={lineUserId}
-            onChange={(e) => setLineUserId(e.target.value)} // Allow change if needed
-            className={styles.input}
-            required
-          />
-
           <button type="submit" className={styles.button} disabled={loading}>
             {loading ? 'Registering...' : 'Register'}
           </button>
