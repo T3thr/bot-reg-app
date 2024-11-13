@@ -91,17 +91,11 @@ export default function Signup() {
             type="submit"
             className="my-3 px-5 py-3 text-white bg-purple-600 rounded-full w-full font-semibold text-lg hover:bg-purple-700 transition duration-200 shadow-md"
           >
-            🐰 Let's Get Started!
+            🐰 Let&apos;s Get Started!
           </button>
 
           <hr className="mt-8 border-gray-300" />
 
-          <p className="text-center mt-6 text-gray-500">
-            Already have an account?{" "}
-            <Link href="/signin" className="text-purple-600 font-semibold hover:underline">
-              Sign in here!
-            </Link>
-          </p>
         </form>
       </div>
     </div>
