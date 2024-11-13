@@ -4,7 +4,7 @@ import Link from "next/link";
 import React, { useState, useContext, useEffect } from "react";
 import AuthContext from "@/context/AuthContext";
 import { toast } from "react-toastify";
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 
 const Signup = () => {
   const { error, signupUser, clearErrors } = useContext(AuthContext);
@@ -14,7 +14,6 @@ const Signup = () => {
   const [password, setPassword] = useState("");
   const [lineUserId, setLineUserId] = useState("");
   const router = useRouter();
-  const searchParams = useSearchParams();
 
   useEffect(() => {
     if (error) {
