@@ -33,27 +33,27 @@ export default function Register() {
     setMessageType('');
 
     try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_URL}/api/register`, {
+      const res = await fetch('/api/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password, lineUserId }),
-    });
-            
-        const data = await res.json();
-        if (res.ok) {
+      });
+
+      const data = await res.json();
+      if (res.ok) {
         setMessage('Registration successful!');
         setMessageType('success');
-        } else {
+      } else {
         setMessage(data.error || 'Registration failed.');
         setMessageType('error');
-        }
+      }
     } catch (error) {
-        setMessage('An unexpected error occurred.');
-        setMessageType('error');
+      setMessage('An unexpected error occurred.');
+      setMessageType('error');
     } finally {
-        setLoading(false);
+      setLoading(false);
     }
-    };
+  };
 
   const goBackToLogin = () => {
     const liffParams = JSON.parse(localStorage.getItem('liffParams'));
