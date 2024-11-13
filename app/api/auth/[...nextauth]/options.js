@@ -1,5 +1,3 @@
-export const dynamic = 'force-dynamic';
-
 import CredentialsProvider from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
 import User from "@/backend/models/User";
