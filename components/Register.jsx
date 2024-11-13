@@ -1,6 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import styles from './Register.module.css';
 import { FaArrowLeft } from 'react-icons/fa';
 
@@ -22,7 +22,7 @@ export default function Register() {
     } else {
       router.push('/'); // Redirect to login if no userId
     }
-    
+
     if (liffParams) {
       const queryString = new URLSearchParams(liffParams).toString();
       router.replace(`/register?${queryString}`);
@@ -33,7 +33,7 @@ export default function Register() {
     e.preventDefault();
     if (!lineUserId) return; // Ensure lineUserId is set
     setLoading(true);
-    setMessage('');
+    setMessage(''); // Clear any existing message
     setMessageType('');
 
     try {
@@ -60,6 +60,9 @@ export default function Register() {
   };
 
   const goBackToLogin = () => {
+    // Clear any existing message before navigating back to login
+    setMessage('');
+    setMessageType('');
     const liffParams = JSON.parse(localStorage.getItem('liffParams'));
     const queryString = new URLSearchParams(liffParams).toString();
     router.push(`/?${queryString}`);
