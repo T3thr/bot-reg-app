@@ -27,9 +27,9 @@ export default function Login() {
       if (liff.isLoggedIn()) {
         const profileData = await liff.getProfile();
         setProfile(profileData);
-        localStorage.setItem('lineUserId', profileData.userId);
+        localStorage.setItem('lineUserId', profileData.userId); // Save user ID in localStorage
       } else {
-        liff.login();
+        liff.login(); // If not logged in, trigger the LINE login
       }
     });
   }, []);
@@ -44,9 +44,8 @@ export default function Login() {
   const navigateToRegister = () => {
     const liffParams = JSON.parse(localStorage.getItem('liffParams'));
     const queryString = new URLSearchParams(liffParams).toString();
-    router.push(`/register?${queryString}`);
+    router.push(`/signup?${queryString}`);
   };
-
 
   const handleCheckGrade = async () => {
     if (!profile) return;

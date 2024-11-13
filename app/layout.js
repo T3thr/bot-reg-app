@@ -1,5 +1,6 @@
 import "./globals.css";
 import mongodbConnect from '@/backend/lib/mongodb'
+import { GlobalProvider } from "./GlobalProvider"
 
 export const metadata = {
   title: "REG-BOT",
@@ -11,9 +12,9 @@ export default async function RootLayout({ children }) {
   return (
     <html lang="en">
       <body>
-
+        <GlobalProvider>
         {children}
-
+        </GlobalProvider>
       </body>
     </html>
   );
