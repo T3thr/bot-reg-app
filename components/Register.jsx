@@ -33,9 +33,10 @@ export default function Register() {
         body: JSON.stringify({ username, password, lineUserId }),
       });
   
-      // Check if the response is okay
       if (!response.ok) {
-        const errorData = await response.json();
+        const errorData = await response.json().catch(() => {
+          return { error: 'Unexpected response format' };
+        });
         throw new Error(errorData.error || 'Registration failed.');
       }
   
