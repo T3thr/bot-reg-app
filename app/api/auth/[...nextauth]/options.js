@@ -7,7 +7,7 @@ import bcrypt from "bcryptjs";
 import LoginActivity from "@/backend/models/LoginActivity";
 import mongoose from "mongoose";
 
-export const options = {
+const options = {
     providers: [
         CredentialsProvider({
             name: "Credentials",
