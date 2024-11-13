@@ -21,31 +21,48 @@ export default function Register() {
     }
   }, []);
 
-  import { NextResponse } from 'next/server';
-  import mongodbConnect from '@/backend/lib/mongodb';
-  import User from '@/backend/models/User';
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setMessage('');
+    setMessageType('');
   
-  export async function POST(req) {
     try {
-      await mongodbConnect();
-      const { username, password, lineUserId } = await req.json();
+      const response = await fetch('/api/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password, lineUserId }),
+      });
   
-      // Check if the user with the provided LINE User ID already exists
-      const existingUser = await User.findOne({ lineUserId });
-      if (existingUser) {
-        return NextResponse.json({ error: 'User already registered.' }, { status: 400 });
+      if (!response.ok) {
+        // Attempt to parse the response as JSON. If it fails, set a general error.
+        let errorData;
+        try {
+          errorData = await response.json();
+        } catch {
+          throw new Error('Unexpected response format.');
+        }
+        throw new Error(errorData.error || 'Registration failed.');
       }
   
-      // Create a new user in the database
-      const newUser = new User({ username, password, lineUserId });
-      await newUser.save();
+      const data = await response.json();
   
-      return NextResponse.json({ success: true });
+      if (data.success) {
+        setMessage('Registration successful!');
+        setMessageType('success');
+      } else {
+        setMessage(data.error || 'Registration failed.');
+        setMessageType('error');
+      }
     } catch (error) {
-      console.error('Registration error:', error);
-      return NextResponse.json({ error: 'Error registering user.' }, { status: 500 });
+      console.error('Submission error:', error);
+      setMessage('An error occurred. Please try again.');
+      setMessageType('error');
+    } finally {
+      setLoading(false);
     }
-  }  
+  };
+  
 
   const goBackToLogin = () => {
     router.push('/');
