@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import liff from '@line/liff';
-import { FaUserCircle, FaSignOutAlt, FaRegRegistered, FaCheckCircle } from 'react-icons/fa';
+import { FaSignOutAlt, FaRegRegistered, FaCheckCircle } from 'react-icons/fa';
 import styles from './Login.module.css';
 
 export default function Login() {
@@ -13,49 +13,47 @@ export default function Login() {
   const searchParams = useSearchParams();
 
   useEffect(() => {
+    const code = searchParams.get('code');
+    const state = searchParams.get('state');
+
     liff.init({ liffId: process.env.NEXT_PUBLIC_LIFF_ID }).then(async () => {
       if (liff.isLoggedIn()) {
         const profileData = await liff.getProfile();
         setProfile(profileData);
         localStorage.setItem('lineUserId', profileData.userId);
-
-        // Save URL query params in localStorage for persistence
-        const urlParams = new URLSearchParams(window.location.search);
-        ['code', 'state', 'liffClientId'].forEach(param => {
-          const value = urlParams.get(param);
-          if (value) localStorage.setItem(param, value);
-        });
       } else {
         liff.login();
       }
     });
   }, []);
 
-  const handleLogout = () => {
-    liff.logout();
-    localStorage.removeItem('lineUserId');
-    window.location.reload();
-  };
-
   const navigateToRegister = () => {
-    const queryParams = new URLSearchParams({
-      code: localStorage.getItem('code'),
-      state: localStorage.getItem('state'),
-      liffClientId: localStorage.getItem('liffClientId')
-    }).toString();
-    router.push(`/register?${queryParams}`);
+    const queryString = `?code=${searchParams.get('code')}&state=${searchParams.get('state')}`;
+    router.push(`/register${queryString}`);
   };
 
-  return (
-    profile ? (
-      <div className={styles.loginContainer}>
-        {/* Profile Display and Logout */}
-        <button onClick={handleLogout}><FaSignOutAlt /> Logout</button>
-        <button onClick={navigateToRegister}><FaRegRegistered /> Go to Register</button>
-        {/* Grade Check Button */}
-      </div>
-    ) : (
-      <p>Loading...</p>
-    )
+  const handleCheckGrade = async () => {
+    setLoading(true);
+    setGrades(null);
+    const lineUserId = profile?.userId;
+
+    try {
+      const { data } = await axios.post('/api/checkgrade', { lineUserId });
+      setGrades(data.grades || { error: data.error });
+    } catch {
+      setGrades({ error: 'Grade check failed' });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return profile ? (
+    <div className={styles.loginContainer}>
+      {/* Profile and UI code */}
+      <button onClick={navigateToRegister}>Go to Register</button>
+      {grades && <pre>{JSON.stringify(grades, null, 2)}</pre>}
+    </div>
+  ) : (
+    <div className={styles.loading}>Loading...</div>
   );
 }
