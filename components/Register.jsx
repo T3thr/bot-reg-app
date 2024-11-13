@@ -1,6 +1,7 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import axios from 'axios'; // Import axios
 import styles from './Register.module.css';
 import { FaArrowLeft } from 'react-icons/fa';
 
@@ -26,32 +27,20 @@ export default function Register() {
     setLoading(true);
     setMessage('');
     setMessageType('');
-  
+
     try {
-      const response = await fetch('/api/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password, lineUserId }),
+      const response = await axios.post('/api/register', {
+        username,
+        password,
+        lineUserId,
       });
-  
-      if (!response.ok) {
-        // Attempt to parse the response as JSON. If it fails, set a general error.
-        let errorData;
-        try {
-          errorData = await response.json();
-        } catch {
-          throw new Error('Unexpected response format.');
-        }
-        throw new Error(errorData.error || 'Registration failed.');
-      }
-  
-      const data = await response.json();
-  
-      if (data.success) {
+
+      // Handle the response from the backend
+      if (response.data.success) {
         setMessage('Registration successful!');
         setMessageType('success');
       } else {
-        setMessage(data.error || 'Registration failed.');
+        setMessage(response.data.error || 'Registration failed.');
         setMessageType('error');
       }
     } catch (error) {
@@ -62,7 +51,6 @@ export default function Register() {
       setLoading(false);
     }
   };
-  
 
   const goBackToLogin = () => {
     router.push('/');
