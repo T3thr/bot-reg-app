@@ -13,21 +13,6 @@ export default function Register() {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
-  useEffect(() => {
-    // Automatically fetch lineUserId from LIFF session
-    const storedUserId = localStorage.getItem('lineUserId');
-    const liffParams = JSON.parse(localStorage.getItem('liffParams'));
-    if (storedUserId) {
-      setLineUserId(storedUserId); // Auto-populate lineUserId
-    } else {
-      router.push('/'); // Redirect to login if no userId
-    }
-
-    if (liffParams) {
-      const queryString = new URLSearchParams(liffParams).toString();
-      router.replace(`/register?${queryString}`);
-    }
-  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
