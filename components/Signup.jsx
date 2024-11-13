@@ -1,9 +1,10 @@
-"use client";
+'use client';
 
 import Link from "next/link";
 import React, { useState, useContext, useEffect } from "react";
 import AuthContext from "@/context/AuthContext";
 import { toast } from "react-toastify";
+import { useRouter, useSearchParams } from 'next/navigation';
 
 const Signup = () => {
   const { error, signupUser, clearErrors } = useContext(AuthContext);
@@ -11,6 +12,9 @@ const Signup = () => {
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [lineUserId, setLineUserId] = useState("");
+  const router = useRouter();
+  const searchParams = useSearchParams();
 
   useEffect(() => {
     if (error) {
@@ -18,6 +22,14 @@ const Signup = () => {
       clearErrors();
     }
   }, [error, clearErrors]);
+
+  useEffect(() => {
+    const storedUserId = localStorage.getItem('lineUserId');
+    const liffParams = JSON.parse(localStorage.getItem('liffParams'));
+
+    if (storedUserId) setLineUserId(storedUserId);
+
+  }, []);
 
   const handleEmailChange = (e) => {
     const value = e.target.value;
@@ -31,7 +43,7 @@ const Signup = () => {
 
   const submitHandler = (e) => {
     e.preventDefault();
-    signupUser({ name, username, email, password });
+    signupUser({ name, username, email, password, lineUserId });
   };
 
   return (
@@ -52,9 +64,8 @@ const Signup = () => {
             />
           </div>
 
-
           <div className="mb-4">
-          <label className="block mb-1">Username</label>
+            <label className="block mb-1">Username</label>
             <input
               className="appearance-none border border-gray-200 bg-gray-100 rounded-md py-2 px-3 hover:border-gray-400 focus:outline-none focus:border-gray-400 w-full"
               type="text"
@@ -86,6 +97,18 @@ const Signup = () => {
               minLength={6}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              required
+            />
+          </div>
+
+          <div className="mb-4">
+            <label className="block mb-1">LINE User ID</label>
+            <input
+              className="appearance-none border border-gray-200 bg-gray-100 rounded-md py-2 px-3 hover:border-gray-400 focus:outline-none focus:border-gray-400 w-full"
+              type="text"
+              placeholder="LINE User ID"
+              value={lineUserId}
+              onChange={(e) => setLineUserId(e.target.value)}
               required
             />
           </div>

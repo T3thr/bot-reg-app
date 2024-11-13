@@ -1,14 +1,16 @@
-'use client'
-import { useState, useContext } from 'react';
+'use client';
+import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import RegisterContext from '@/context/RegisterContext';
 import styles from './Register.module.css';
 import { FaArrowLeft } from 'react-icons/fa';
 
 export default function Register() {
-  const { lineUserId, loading, message, messageType, registerUser, clearMessage } = useContext(RegisterContext);
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [lineUserId, setLineUserId] = useState('');
+  const [message, setMessage] = useState('');
+  const [messageType, setMessageType] = useState(''); // Define messageType state
+  const [loading, setLoading] = useState(false);
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -26,14 +28,38 @@ export default function Register() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    clearMessage();
-    await registerUser(username, password);
+    setLoading(true);
+    setMessage('');
+    setMessageType('');
+  
+    try {
+      const res = await fetch(`/api/register`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password, lineUserId }),
+      });
+  
+      const data = await res.json();
+      if (res.ok) {
+        setMessage('Registration successful!');
+        setMessageType('success');
+      } else {
+        setMessage(data.error || 'Registration failed.');
+        setMessageType('error');
+      }
+    } catch (error) {
+      setMessage('An unexpected error occurred.');
+      setMessageType('error');
+    } finally {
+      setLoading(false);
+    }
   };
-
   
 
   const goBackToLogin = () => {
-    clearMessage();
+    // Clear any existing message before navigating back to login
+    setMessage('');
+    setMessageType('');
     const liffParams = JSON.parse(localStorage.getItem('liffParams'));
     const queryString = new URLSearchParams(liffParams).toString();
     router.push(`/?${queryString}`);

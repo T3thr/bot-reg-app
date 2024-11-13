@@ -7,7 +7,7 @@ import { NextResponse } from "next/server";
 export async function POST(req) {
   await mongodbConnect();
 
-  const { name,username , email, password } = await req.json();
+  const { name,username , email, password , lineUserId} = await req.json();
 
   // Check if user already exists
   const existingUser = await User.findOne({ email });
@@ -29,12 +29,13 @@ export async function POST(req) {
 
   try {
     // Create new user (password will be hashed by the model's pre-save hook)
-    const user = await User.create({ name, username, email, password });
+    const user = await User.create({ name, username, email, password ,lineUserId });
     
 
     return NextResponse.json({
       user: {
         id: user._id,
+        lineuserId : user.lineUserId,
         name: user.name,
         username: user.username,
         email: user.email,

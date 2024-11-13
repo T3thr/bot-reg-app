@@ -40,10 +40,10 @@ export const AuthProvider = ({ children }) => {
     fetchUser();
   }, []);
 
-  const signupUser = async ({ name, username, email, password }) => {
+  const signupUser = async ({ name, username, email, password, lineUserId }) => {
     try {
       setLoading(true);
-      const { data, status } = await axios.post("/api/auth/signup", { name, username, email, password });
+      const { data, status } = await axios.post("/api/auth/signup", { name, username, email, password,lineUserId });
       setLoading(false);
 
       if (status === 201) {
