@@ -5,70 +5,53 @@ import styles from './Register.module.css';
 import { FaArrowLeft } from 'react-icons/fa';
 
 export default function Register() {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [lineUserId, setLineUserId] = useState('');
-  const [message, setMessage] = useState('');
-  const [messageType, setMessageType] = useState(''); // For success/error message styling
-  const [loading, setLoading] = useState(false);
-  const router = useRouter();
-
-  useEffect(() => {
-    const storedUserId = localStorage.getItem('lineUserId');
-    if (storedUserId) {
-      setLineUserId(storedUserId);
-    }
-  }, []);
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setMessage('');
-    setMessageType('');
-
-    try {
-      const response = await fetch('/api/register', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          username,
-          password,
-          lineUserId,
-        }),
-      });
-
-      if (response.ok) {
-        // Successful registration
-        setMessage('Registration successful!');
-        setMessageType('success');
-      } else {
-        // If response is not OK (e.g., 400, 500)
-        const errorData = await response.json();
-        setMessage(errorData.error || 'Registration failed.');
-        setMessageType('error');
+    const [username, setUsername] = useState('');
+    const [password, setPassword] = useState('');
+    const [lineUserId, setLineUserId] = useState('');
+    const [message, setMessage] = useState('');
+    const [loading, setLoading] = useState(false);
+    const router = useRouter();
+    const searchParams = useSearchParams();
+  
+    // Retrieve URL parameters
+    const code = searchParams.get('code');
+    const state = searchParams.get('state');
+  
+    useEffect(() => {
+      const storedUserId = localStorage.getItem('lineUserId');
+      if (storedUserId) {
+        setLineUserId(storedUserId);
       }
-    } catch (error) {
-      console.error('Error during registration:', error);
-
-      if (error instanceof Error) {
-        // Handle generic error
-        setMessage('An unexpected error occurred. Please try again.');
-      } else {
-        // For non-Error objects (rare cases)
-        setMessage('Unknown error occurred. Please try again.');
+    }, []);
+  
+    const handleSubmit = async (e) => {
+      e.preventDefault();
+      setLoading(true);
+      setMessage('');
+  
+      try {
+        const response = await fetch('/api/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, password, lineUserId }),
+        });
+  
+        const data = await response.json();
+        if (response.ok) {
+          setMessage('Registration successful!');
+        } else {
+          setMessage(data.error || 'Registration failed.');
+        }
+      } catch (error) {
+        setMessage('An unexpected error occurred.');
+      } finally {
+        setLoading(false);
       }
-
-      setMessageType('error');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const goBackToLogin = () => {
-    router.push('/');
-  };
+    };
+  
+    const goBackToLogin = () => {
+      router.push(`/?code=${code}&state=${state}`);
+    };
 
   return (
     <div className={styles.container}>
