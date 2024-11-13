@@ -1,12 +1,13 @@
+import { Suspense } from 'react';  
 import Login from '@/components/Login';
-import Register from '@/components/Register'
+import Register from '@/components/Register';
 
 export default function HomePage() {
   return (
     <div className="homepage">
-
-      <Login />
-
+      <Suspense fallback={<div>Loading...</div>}>
+        <Login />
+      </Suspense>
     </div>
   );
 }

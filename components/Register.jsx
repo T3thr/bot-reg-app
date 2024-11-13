@@ -1,6 +1,6 @@
 'use client'
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useEffect, useState, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import styles from './Register.module.css';
 import { FaArrowLeft } from 'react-icons/fa';
 
@@ -54,6 +54,7 @@ export default function Register() {
     };
 
   return (
+    <Suspense fallback={<p>Loading...</p>}>
     <div className={styles.container}>
       <div className={styles.registerBox}>
         <button className={styles.goBackButton} onClick={goBackToLogin}>
@@ -100,5 +101,6 @@ export default function Register() {
         )}
       </div>
     </div>
+    </Suspense>
   );
 }
