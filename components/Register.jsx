@@ -33,10 +33,9 @@ export default function Register() {
         body: JSON.stringify({ username, password, lineUserId }),
       });
   
+      // Check if the response is okay
       if (!response.ok) {
-        const errorData = await response.json().catch(() => {
-          return { error: 'Unexpected response format' };
-        });
+        const errorData = await response.json();
         throw new Error(errorData.error || 'Registration failed.');
       }
   
@@ -56,6 +55,7 @@ export default function Register() {
       setLoading(false);
     }
   };
+  
   
   const goBackToLogin = () => {
     router.push('/');
