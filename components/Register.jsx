@@ -1,7 +1,7 @@
 'use client'
 import { useState, useContext } from 'react';
-import { useRouter } from 'next/navigation';
-import RegisterContext from '../context/RegisterContext';
+import { useRouter, useSearchParams } from 'next/navigation';
+import RegisterContext from '@/context/RegisterContext';
 import styles from './Register.module.css';
 import { FaArrowLeft } from 'react-icons/fa';
 
@@ -10,6 +10,19 @@ export default function Register() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const router = useRouter();
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    const storedUserId = localStorage.getItem('lineUserId');
+    const liffParams = JSON.parse(localStorage.getItem('liffParams'));
+    if (storedUserId) setLineUserId(storedUserId);
+
+    // Check if query params exist to keep them in the URL
+    if (liffParams) {
+      const queryString = new URLSearchParams(liffParams).toString();
+      router.replace(`/register?${queryString}`);
+    }
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
