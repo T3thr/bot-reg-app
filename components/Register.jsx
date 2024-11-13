@@ -28,7 +28,7 @@ export default function Register() {
     setMessageType('');
 
     try {
-      const response = await axios.post('/api/register', {
+      const response =  axios.post('/api/register', {
         username,
         password,
         lineUserId,

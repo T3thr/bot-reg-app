@@ -40,13 +40,13 @@ export default function Login() {
     setGrades(null);
   
     try {
-      const response = await fetch('/api/checkgrade', {
+      const response = fetch('/api/checkgrade', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ lineUserId: profile.userId }),
       });
   
-      const data = await response.json();
+      const data = response.json();
       if (data.success) {
         setGrades(data.grades);
       } else {
