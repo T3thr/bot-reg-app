@@ -4,7 +4,10 @@ import mongoose from 'mongoose';
 const userSchema = new mongoose.Schema({
   username: String,
   password: String, // Ensure password is hashed before storing
-  lineUserId: String,
+  lineUserId:{
+    type: String,
+    unique: true,
+  },
   name: {
     type: String,
   },
