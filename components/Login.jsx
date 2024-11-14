@@ -1,8 +1,8 @@
-'use client';
+'use client'; 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import liff from '@line/liff';
-import { FaUserCircle, FaSignOutAlt, FaRegRegistered, FaCheckCircle, FaPlusCircle } from 'react-icons/fa';
+import { FaSignOutAlt, FaRegRegistered, FaCheckCircle, FaPlusCircle } from 'react-icons/fa';
 import styles from './Login.module.css';
 
 export default function Login() {
@@ -14,6 +14,16 @@ export default function Login() {
   const lineOAUrl = "https://access.line.me/oauth2/v2.1/authorize?response_type=code&client_id=2006561325&redirect_uri=https://bot-reg-app.vercel.app&state=12345abcde&scope=profile%20openid%20email&bot_prompt=aggressive&nonce=09876xyz";
 
   useEffect(() => {
+    const queryParams = new URLSearchParams(window.location.search);
+    const code = queryParams.get('code');
+    const state = queryParams.get('state');
+
+    // Store code and state in the URL (this will preserve it when navigating to signup)
+    if (code && state) {
+      const newUrl = `${window.location.origin}${window.location.pathname}?code=${code}&state=${state}`;
+      window.history.replaceState({}, '', newUrl);
+    }
+
     liff.init({ liffId: process.env.NEXT_PUBLIC_LIFF_ID }).then(async () => {
       if (liff.isLoggedIn()) {
         const profileData = await liff.getProfile();

@@ -17,6 +17,16 @@ export default function Signup() {
   useEffect(() => {
     const storedUserId = localStorage.getItem('lineUserId');
     const liffParams = JSON.parse(localStorage.getItem('liffParams'));
+    const router = useRouter();
+    
+    useEffect(() => {
+      const queryParams = new URLSearchParams(window.location.search);
+      const code = queryParams.get('code');
+      const state = queryParams.get('state');
+      
+      // Now you can use code and state in the signup process if needed
+      console.log(code, state);
+    }, []);
     if (storedUserId) setLineUserId(storedUserId);
 
     // Check if query params exist to keep them in the URL
