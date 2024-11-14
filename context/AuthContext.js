@@ -17,6 +17,18 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
+  useEffect(() => {
+    const storedUserId = localStorage.getItem('lineUserId');
+    const liffParams = JSON.parse(localStorage.getItem('liffParams'));
+    if (storedUserId) setLineUserId(storedUserId);
+
+    // Check if query params exist to keep them in the URL
+    if (liffParams) {
+      const queryString = new URLSearchParams(liffParams).toString();
+      router.replace(`/register?${queryString}`);
+    }
+  }, []);
+
   // Function to go back to login page with query params
   const goBackToLogin = () => {
     const liffParams = JSON.parse(localStorage.getItem('liffParams'));
