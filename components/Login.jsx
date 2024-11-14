@@ -18,6 +18,7 @@ export default function Login() {
     const liffClientId = searchParams.get('liffClientId');
     const liffRedirectUri = searchParams.get('liffRedirectUri');
 
+    // Save parameters to localStorage to persist during navigation
     if (code && state && liffClientId && liffRedirectUri) {
       localStorage.setItem('liffParams', JSON.stringify({ code, state, liffClientId, liffRedirectUri }));
     }
@@ -26,9 +27,9 @@ export default function Login() {
       if (liff.isLoggedIn()) {
         const profileData = await liff.getProfile();
         setProfile(profileData);
-        localStorage.setItem('lineUserId', profileData.userId);
+        localStorage.setItem('lineUserId', profileData.userId); // Save user ID in localStorage
       } else {
-        liff.login();
+        liff.login(); // If not logged in, trigger the LINE login
       }
     });
   }, []);
@@ -41,25 +42,25 @@ export default function Login() {
   };
 
   const navigateToRegister = () => {
-    router.push(`/signup`);
+    router.push(/signup);
   };
 
   const handleCheckGrade = async () => {
     if (!profile) return;
-
+  
     setLoading(true);
     setGrades(null);
-
+  
     try {
       const response = await fetch('/api/checkgrade', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ lineUserId: profile.userId }),
       });
-
+  
       const data = await response.json();
       if (data.success) {
-        setGrades({ message: data.notification });
+        setGrades(data.grades);
       } else {
         setGrades({ error: data.error || 'Grade check failed or user not registered' });
       }
@@ -69,7 +70,7 @@ export default function Login() {
       setLoading(false);
     }
   };
-
+  
   return profile ? (
     <div className={styles.loginContainer}>
       <div className={styles.profileCard}>
@@ -81,14 +82,14 @@ export default function Login() {
           </div>
         </div>
         <div className={styles.buttonGroup}>
-          <button className={`${styles.btn} ${styles.btnLogout}`} onClick={handleLogout}>
+          <button className={${styles.btn} ${styles.btnLogout}} onClick={handleLogout}>
             <FaSignOutAlt className={styles.icon} /> Logout
           </button>
-          <button className={`${styles.btn} ${styles.btnRegister}`} onClick={navigateToRegister}>
+          <button className={${styles.btn} ${styles.btnRegister}} onClick={navigateToRegister}>
             <FaRegRegistered className={styles.icon} /> Go to Register
           </button>
           <button
-            className={`${styles.btn} ${styles.btnCheckGrade}`}
+            className={${styles.btn} ${styles.btnCheckGrade}}
             onClick={handleCheckGrade}
             disabled={loading}
           >
@@ -100,7 +101,7 @@ export default function Login() {
             {grades.error ? (
               <p className={styles.error}>{grades.error}</p>
             ) : (
-              <pre className={styles.gradeMessage}>{grades.message}</pre>
+              <pre>{JSON.stringify(grades, null, 2)}</pre>
             )}
           </div>
         )}
