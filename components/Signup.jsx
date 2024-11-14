@@ -11,14 +11,15 @@ export default function Signup() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [lineUserId, setLineUserId] = useState("");
-  const [usernameError, setUsernameError] = useState("");
+  const [usernameError, setUsernameError] = useState("");  // To store error message for username validation
   const router = useRouter();
 
   useEffect(() => {
     const storedUserId = localStorage.getItem('lineUserId');
+    const liffParams = JSON.parse(localStorage.getItem('liffParams'));
     if (storedUserId) setLineUserId(storedUserId);
 
-    const liffParams = JSON.parse(localStorage.getItem('liffParams'));
+    // Check if query params exist to keep them in the URL
     if (liffParams) {
       const queryString = new URLSearchParams(liffParams).toString();
       router.replace(`/signup?${queryString}`);
@@ -48,8 +49,9 @@ export default function Signup() {
   };
 
   const goBackToLogin = () => {
+    // Clear any existing message before navigating back to login
     const liffParams = JSON.parse(localStorage.getItem('liffParams'));
-    const queryString = liffParams ? new URLSearchParams(liffParams).toString() : '';
+    const queryString = new URLSearchParams(liffParams).toString();
     router.push(`/?${queryString}`);
   };
 
