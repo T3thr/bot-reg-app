@@ -1,4 +1,4 @@
-'use client'; 
+'use client';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import liff from '@line/liff';
@@ -9,36 +9,28 @@ export default function Login() {
   const [profile, setProfile] = useState(null);
   const [grades, setGrades] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [hasAddedLineOA, setHasAddedLineOA] = useState(false); // Track Line OA addition
+  const [hasAddedLineOA, setHasAddedLineOA] = useState(false); // New state to track Line OA addition
   const router = useRouter();
   const lineOAUrl = "https://access.line.me/oauth2/v2.1/authorize?response_type=code&client_id=2006561325&redirect_uri=https://bot-reg-app.vercel.app&state=12345abcde&scope=profile%20openid%20email&bot_prompt=aggressive&nonce=09876xyz";
 
   useEffect(() => {
-    // Extract 'code' and 'state' from the URL when the user is redirected from LIFF
-    const urlParams = new URLSearchParams(window.location.search);
-    const code = urlParams.get('code');
-    const state = urlParams.get('state');
-
-    if (code && state) {
-      // Store the code and state in the URL for later usage
-      window.history.replaceState({}, '', `${window.location.pathname}?code=${code}&state=${state}`);
-    }
-
     liff.init({ liffId: process.env.NEXT_PUBLIC_LIFF_ID }).then(async () => {
       if (liff.isLoggedIn()) {
         const profileData = await liff.getProfile();
         setProfile(profileData);
         localStorage.setItem('lineUserId', profileData.userId);
 
+        // Check if the user has already added the Line OA
         const lineOAStatus = localStorage.getItem('lineOAAdded');
         if (lineOAStatus) {
-          setHasAddedLineOA(true);
+          setHasAddedLineOA(true); // Set state to true if Line OA added
         } else {
+          // Automatically redirect to add LineOA if not already added
           window.location.href = lineOAUrl;
-          localStorage.setItem('lineOAAdded', 'true');
+          localStorage.setItem('lineOAAdded', 'true'); // Flag to prevent repeated redirects
         }
       } else {
-        liff.login();
+        liff.login(); // Trigger LINE login if not already logged in
       }
     });
   }, []);
@@ -47,12 +39,12 @@ export default function Login() {
     liff.logout();
     localStorage.removeItem('lineUserId');
     localStorage.removeItem('liffParams');
-    localStorage.removeItem('lineOAAdded');
+    localStorage.removeItem('lineOAAdded'); // Reset the flag on logout
     window.location.reload();
   };
 
   const navigateToRegister = () => {
-    router.push('/signup');
+    router.push(`/signup`);
   };
 
   const handleCheckGrade = async () => {
@@ -109,7 +101,7 @@ export default function Login() {
           >
             {loading ? 'Checking...' : <><FaCheckCircle className={styles.icon} /> Check Grade</>}
           </button>
-
+          
           {/* Conditionally render Add Line OA button */}
           {!hasAddedLineOA && (
             <button className={`${styles.btn} ${styles.btnAddLineOA}`} onClick={handleAddLineOA}>

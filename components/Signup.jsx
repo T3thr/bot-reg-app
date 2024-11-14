@@ -9,9 +9,9 @@ import { useRouter } from 'next/navigation';
 export default function Signup() {
   const { error, signupUser, clearErrors } = useContext(AuthContext);
   const [username, setUsername] = useState("");
+  const [usernameError, setUsernameError] = useState("");  // To store error message for username validation
   const [password, setPassword] = useState("");
   const [lineUserId, setLineUserId] = useState("");
-  const [usernameError, setUsernameError] = useState("");  // To store error message for username validation
   const router = useRouter();
 
   useEffect(() => {
@@ -20,12 +20,8 @@ export default function Signup() {
     if (storedUserId) setLineUserId(storedUserId);
 
     // Check if query params exist to keep them in the URL
-    const urlParams = new URLSearchParams(window.location.search);
-    const code = urlParams.get('code');
-    const state = urlParams.get('state');
-
-    if (code && state) {
-      const queryString = new URLSearchParams({ code, state }).toString();
+    if (liffParams) {
+      const queryString = new URLSearchParams(liffParams).toString();
       router.replace(`/signup?${queryString}`);
     }
   }, []);
@@ -39,7 +35,6 @@ export default function Signup() {
 
   const submitHandler = (e) => {
     e.preventDefault();
-
     // Validate username to be an 8-digit number
     const usernameRegex = /^[0-9]{8}$/;
     if (!usernameRegex.test(username)) {
@@ -53,25 +48,17 @@ export default function Signup() {
   };
 
   const goBackToLogin = () => {
-    // Retain code and state params in the URL when navigating back to Login
-    const urlParams = new URLSearchParams(window.location.search);
-    const code = urlParams.get('code');
-    const state = urlParams.get('state');
-
-    if (code && state) {
-      router.push(`/?code=${code}&state=${state}`);
-    } else {
-      router.push(`/`);
-    }
+    router.push(`/`);
   };
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gradient-to-r from-pink-200 to-purple-300">
       <div style={{ maxWidth: "480px" }} className="mt-10 mb-20 p-6 md:p-8 bg-white rounded-3xl shadow-lg relative">
 
+
+
         {/* Cute illustration and background elements */}
         <div className="absolute top-0 left-0 w-full h-full rounded-3xl bg-pink-100 opacity-30 z-0 pointer-events-none"></div>
-
         {/* Back Button */}
         <button 
           onClick={goBackToLogin}
@@ -79,26 +66,22 @@ export default function Signup() {
         >
           &larr; Back
         </button>
-
         <form onSubmit={submitHandler} className="relative z-20">
           <h2 className="mt-6 mb-18 text-3xl font-bold text-center text-purple-800">
-            Join Grade Tracker
+              Join Grade Tracker 
           </h2>
           <p className="text-center text-gray-500 mb-8">กรอกรหัสนิสิตและรหัสผ่านของคุณเพื่อใช้งาน! </p>
 
           <div className="mb-6">
             <label className="block mb-1 text-purple-700 font-semibold">รหัสนิสิต</label>
             <input
-              className={`appearance-none border-2 ${usernameError ? 'border-red-500' : 'border-purple-200'} bg-pink-50 rounded-full py-3 px-4 focus:border-purple-400 focus:outline-none w-full`}
+              className="appearance-none border-2 border-purple-200 bg-pink-50 rounded-full py-3 px-4 focus:border-purple-400 focus:outline-none w-full"
               type="text"
               placeholder="รหัสนิสิต 8 หลัก"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               required
             />
-            {usernameError && (
-              <p className="text-red-500 text-sm mt-2">{usernameError}</p>
-            )}
           </div>
 
           <div className="mb-6">
@@ -139,4 +122,4 @@ export default function Signup() {
       </div>
     </div>
   );
-}
+};
