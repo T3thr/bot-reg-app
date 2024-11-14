@@ -10,7 +10,7 @@ export default function Login() {
   const [grades, setGrades] = useState(null);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
-  const lineOAUrl = "https://access.line.me/oauth2/v2.1/authorize?response_type=code&client_id=2006560809&redirect_uri=https://bot-reg-app.vercel.app&state=12345abcde&scope=profile%20openid&nonce=09876xyz";
+  const lineOAUrl = "https://access.line.me/oauth2/v2.1/authorize?response_type=code&client_id=2006561325&redirect_uri=https://bot-reg-app.vercel.app&state=12345abcde&scope=profile%20openid%20email&bot_prompt=aggressive&nonce=09876xyz";
 
   useEffect(() => {
     liff.init({ liffId: process.env.NEXT_PUBLIC_LIFF_ID }).then(async () => {
