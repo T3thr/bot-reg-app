@@ -1,6 +1,6 @@
 'use client';
 import { useEffect, useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter  } from 'next/navigation';
 import liff from '@line/liff';
 import { FaUserCircle, FaSignOutAlt, FaRegRegistered, FaCheckCircle } from 'react-icons/fa';
 import styles from './Login.module.css';
@@ -10,18 +10,8 @@ export default function Login() {
   const [grades, setGrades] = useState(null);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
-  const searchParams = useSearchParams();
 
   useEffect(() => {
-    const code = searchParams.get('code');
-    const state = searchParams.get('state');
-    const liffClientId = searchParams.get('liffClientId');
-    const liffRedirectUri = searchParams.get('liffRedirectUri');
-
-    // Save parameters to localStorage to persist during navigation
-    if (code && state && liffClientId && liffRedirectUri) {
-      localStorage.setItem('liffParams', JSON.stringify({ code, state, liffClientId, liffRedirectUri }));
-    }
 
     liff.init({ liffId: process.env.NEXT_PUBLIC_LIFF_ID }).then(async () => {
       if (liff.isLoggedIn()) {
@@ -42,9 +32,7 @@ export default function Login() {
   };
 
   const navigateToRegister = () => {
-    const liffParams = JSON.parse(localStorage.getItem('liffParams'));
-    const queryString = new URLSearchParams(liffParams).toString();
-    router.push(`/register?${queryString}`);
+    router.push(`/signup`);
   };
 
   const handleCheckGrade = async () => {
