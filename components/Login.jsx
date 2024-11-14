@@ -1,6 +1,6 @@
 'use client';
 import { useEffect, useState } from 'react';
-import { useRouter  } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import liff from '@line/liff';
 import { FaUserCircle, FaSignOutAlt, FaRegRegistered, FaCheckCircle } from 'react-icons/fa';
 import styles from './Login.module.css';
@@ -11,14 +11,20 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
-
   useEffect(() => {
-
     liff.init({ liffId: process.env.NEXT_PUBLIC_LIFF_ID }).then(async () => {
       if (liff.isLoggedIn()) {
         const profileData = await liff.getProfile();
         setProfile(profileData);
         localStorage.setItem('lineUserId', profileData.userId); // Save user ID in localStorage
+        
+        // Check if user has added the LineOA
+        const isFriend = await liff.getFriendship();
+        if (!isFriend.friendFlag) {
+          // Prompt user to add your LineOA if not already added
+          const lineOAUrl = "https://lin.ee/Kv8ttA6"; // replace with your LineOA URL
+          window.location.href = lineOAUrl;
+        }
       } else {
         liff.login(); // If not logged in, trigger the LINE login
       }
