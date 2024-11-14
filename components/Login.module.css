@@ -164,3 +164,14 @@
     }
   }
   
+  /* Additional styling for Add Line OA button */
+.btnAddLineOA {
+    background-color: #3498db;
+    color: white;
+    border: none;
+  }
+  
+  .btnAddLineOA:hover {
+    background-color: #2980b9;
+  }
+  
