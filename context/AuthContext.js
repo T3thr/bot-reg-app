@@ -3,7 +3,7 @@
 "use client";
 
 import axios from "axios";
-import { useRouter  } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { createContext, useState, useEffect } from "react";
 import { toast } from "react-toastify";
 import { signIn as nextAuthSignIn, getSession } from "next-auth/react";
@@ -15,27 +15,7 @@ export const AuthProvider = ({ children }) => {
   const [role, setRole] = useState("user"); // Default role to "user"
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [lineUserId, setLineUserId] = useState('');
   const router = useRouter();
-
-  useEffect(() => {
-    const storedUserId = localStorage.getItem('lineUserId');
-    const liffParams = JSON.parse(localStorage.getItem('liffParams'));
-    if (storedUserId) setLineUserId(storedUserId);
-
-    // Check if query params exist to keep them in the URL
-    if (liffParams) {
-      const queryString = new URLSearchParams(liffParams).toString();
-      router.replace(`/register?${queryString}`);
-    }
-  }, []);
-
-  // Function to go back to login page with query params
-  const goBackToLogin = () => {
-    const liffParams = JSON.parse(localStorage.getItem('liffParams'));
-    const queryString = new URLSearchParams(liffParams).toString();
-    router.push(`/?${queryString}`);
-  };
 
   // Fetch the current session and user data when the component mounts
   useEffect(() => {
@@ -69,7 +49,7 @@ export const AuthProvider = ({ children }) => {
       if (status === 201) {
         toast.success("Signup successful! Go to Home Page soon.", {
           autoClose: 3000,
-          onClose: () => goBackToLogin(), // Call goBackToLogin when toast is closed
+          onClose: () => router.push("/"),
         });
         setUser(data.user); // Set user state after signup
       }

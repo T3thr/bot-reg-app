@@ -6,34 +6,45 @@ import { FaUserCircle, FaSignOutAlt, FaRegRegistered, FaCheckCircle } from 'reac
 import styles from './Login.module.css';
 
 export default function Login() {
-  const [profile, setProfile] = useState(null);
-  const [grades, setGrades] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const router = useRouter();
-
-  useEffect(() => {
-
-    liff.init({ liffId: process.env.NEXT_PUBLIC_LIFF_ID }).then(async () => {
-      if (liff.isLoggedIn()) {
-        const profileData = await liff.getProfile();
-        setProfile(profileData);
-        localStorage.setItem('lineUserId', profileData.userId); // Save user ID in localStorage
-      } else {
-        liff.login(); // If not logged in, trigger the LINE login
+    const [profile, setProfile] = useState(null);
+    const [grades, setGrades] = useState(null);
+    const [loading, setLoading] = useState(false);
+    const router = useRouter();
+  
+    useEffect(() => {
+      // Capture and store URL parameters on initial load
+      const urlParams = new URLSearchParams(window.location.search);
+      const code = urlParams.get('code');
+      const state = urlParams.get('state');
+      const liffClientId = urlParams.get('liffClientId');
+      const liffRedirectUri = urlParams.get('liffRedirectUri');
+  
+      if (code && state && liffClientId && liffRedirectUri) {
+        const params = { code, state, liffClientId, liffRedirectUri };
+        localStorage.setItem('liffParams', JSON.stringify(params));
       }
-    });
-  }, []);
-
-  const handleLogout = () => {
-    liff.logout();
-    localStorage.removeItem('lineUserId');
-    localStorage.removeItem('liffParams');
-    window.location.reload();
-  };
-
-  const navigateToRegister = () => {
-    router.push(`/signup`);
-  };
+  
+      liff.init({ liffId: process.env.NEXT_PUBLIC_LIFF_ID }).then(async () => {
+        if (liff.isLoggedIn()) {
+          const profileData = await liff.getProfile();
+          setProfile(profileData);
+          localStorage.setItem('lineUserId', profileData.userId);
+        } else {
+          liff.login();
+        }
+      });
+    }, []);
+  
+    const navigateToRegister = () => {
+      const liffParams = JSON.parse(localStorage.getItem('liffParams'));
+      if (liffParams) {
+        const queryString = new URLSearchParams(liffParams).toString();
+        router.push(`/signup?${queryString}`);
+      } else {
+        router.push('/signup');
+      }
+    };
+  
 
   const handleCheckGrade = async () => {
     if (!profile) return;

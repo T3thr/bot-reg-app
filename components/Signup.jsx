@@ -11,20 +11,25 @@ export default function Signup() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [lineUserId, setLineUserId] = useState("");
-  const [usernameError, setUsernameError] = useState("");  // To store error message for username validation
+  const [usernameError, setUsernameError] = useState("");
   const router = useRouter();
 
   useEffect(() => {
     const storedUserId = localStorage.getItem('lineUserId');
-    const liffParams = JSON.parse(localStorage.getItem('liffParams'));
     if (storedUserId) setLineUserId(storedUserId);
 
-    // Check if query params exist to keep them in the URL
+    const liffParams = JSON.parse(localStorage.getItem('liffParams'));
     if (liffParams) {
       const queryString = new URLSearchParams(liffParams).toString();
       router.replace(`/signup?${queryString}`);
     }
   }, []);
+
+  const goBackToLogin = () => {
+    const liffParams = JSON.parse(localStorage.getItem('liffParams'));
+    const queryString = liffParams ? new URLSearchParams(liffParams).toString() : '';
+    router.push(`/?${queryString}`);
+  };
 
   useEffect(() => {
     if (error) {
@@ -32,28 +37,6 @@ export default function Signup() {
       clearErrors();
     }
   }, [error, clearErrors]);
-
-  const submitHandler = (e) => {
-    e.preventDefault();
-
-    // Validate username to be an 8-digit number
-    const usernameRegex = /^[0-9]{8}$/;
-    if (!usernameRegex.test(username)) {
-      setUsernameError("รหัสนิสิตต้องเป็นตัวเลข 8 หลัก");
-      return; // Prevent form submission if username is invalid
-    }
-
-    // Clear any previous error if validation passes
-    setUsernameError("");
-    signupUser({ username, password, lineUserId });
-  };
-
-  const goBackToLogin = () => {
-    // Clear any existing message before navigating back to login
-    const liffParams = JSON.parse(localStorage.getItem('liffParams'));
-    const queryString = new URLSearchParams(liffParams).toString();
-    router.push(`/?${queryString}`);
-  };
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gradient-to-r from-pink-200 to-purple-300">
