@@ -9,6 +9,7 @@ export default function Login() {
   const [profile, setProfile] = useState(null);
   const [grades, setGrades] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [hasAddedLineOA, setHasAddedLineOA] = useState(false); // New state to track Line OA addition
   const router = useRouter();
   const lineOAUrl = "https://access.line.me/oauth2/v2.1/authorize?response_type=code&client_id=2006561325&redirect_uri=https://bot-reg-app.vercel.app&state=12345abcde&scope=profile%20openid%20email&bot_prompt=aggressive&nonce=09876xyz";
 
@@ -19,8 +20,12 @@ export default function Login() {
         setProfile(profileData);
         localStorage.setItem('lineUserId', profileData.userId);
 
-        // Automatically redirect to add LineOA if not already added
-        if (!localStorage.getItem('lineOAAdded')) {
+        // Check if the user has already added the Line OA
+        const lineOAStatus = localStorage.getItem('lineOAAdded');
+        if (lineOAStatus) {
+          setHasAddedLineOA(true); // Set state to true if Line OA added
+        } else {
+          // Automatically redirect to add LineOA if not already added
           window.location.href = lineOAUrl;
           localStorage.setItem('lineOAAdded', 'true'); // Flag to prevent repeated redirects
         }
@@ -96,10 +101,15 @@ export default function Login() {
           >
             {loading ? 'Checking...' : <><FaCheckCircle className={styles.icon} /> Check Grade</>}
           </button>
-          <button className={`${styles.btn} ${styles.btnAddLineOA}`} onClick={handleAddLineOA}>
-            <FaPlusCircle className={styles.icon} /> Add Line OA
-          </button>
+          
+          {/* Conditionally render Add Line OA button */}
+          {!hasAddedLineOA && (
+            <button className={`${styles.btn} ${styles.btnAddLineOA}`} onClick={handleAddLineOA}>
+              <FaPlusCircle className={styles.icon} /> Add Line OA
+            </button>
+          )}
         </div>
+
         {grades && (
           <div className={styles.gradesResult}>
             {grades.error ? (
