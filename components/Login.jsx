@@ -42,7 +42,9 @@ export default function Login() {
   };
 
   const navigateToRegister = () => {
-    router.push(/signup);
+    const liffParams = JSON.parse(localStorage.getItem('liffParams'));
+    const queryString = new URLSearchParams(liffParams).toString();
+    router.push(`/signup`);
   };
 
   const handleCheckGrade = async () => {
