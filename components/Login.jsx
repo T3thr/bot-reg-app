@@ -18,7 +18,6 @@ export default function Login() {
     const liffClientId = searchParams.get('liffClientId');
     const liffRedirectUri = searchParams.get('liffRedirectUri');
 
-    // Save parameters to localStorage to persist during navigation
     if (code && state && liffClientId && liffRedirectUri) {
       localStorage.setItem('liffParams', JSON.stringify({ code, state, liffClientId, liffRedirectUri }));
     }
@@ -27,9 +26,9 @@ export default function Login() {
       if (liff.isLoggedIn()) {
         const profileData = await liff.getProfile();
         setProfile(profileData);
-        localStorage.setItem('lineUserId', profileData.userId); // Save user ID in localStorage
+        localStorage.setItem('lineUserId', profileData.userId);
       } else {
-        liff.login(); // If not logged in, trigger the LINE login
+        liff.login();
       }
     });
   }, []);
@@ -47,20 +46,20 @@ export default function Login() {
 
   const handleCheckGrade = async () => {
     if (!profile) return;
-  
+
     setLoading(true);
     setGrades(null);
-  
+
     try {
       const response = await fetch('/api/checkgrade', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ lineUserId: profile.userId }),
       });
-  
+
       const data = await response.json();
       if (data.success) {
-        setGrades(data.notification);
+        setGrades({ message: data.notification });
       } else {
         setGrades({ error: data.error || 'Grade check failed or user not registered' });
       }
@@ -70,7 +69,7 @@ export default function Login() {
       setLoading(false);
     }
   };
-  
+
   return profile ? (
     <div className={styles.loginContainer}>
       <div className={styles.profileCard}>
@@ -96,17 +95,12 @@ export default function Login() {
             {loading ? 'Checking...' : <><FaCheckCircle className={styles.icon} /> Check Grade</>}
           </button>
         </div>
-        
-        {/* Grade Results Section */}
         {grades && (
           <div className={styles.gradesResult}>
             {grades.error ? (
               <p className={styles.error}>{grades.error}</p>
             ) : (
-              <div className={styles.resultContainer}>
-                <h2>Grade Status</h2>
-                <p>{grades}</p>
-              </div>
+              <pre className={styles.gradeMessage}>{grades.message}</pre>
             )}
           </div>
         )}
