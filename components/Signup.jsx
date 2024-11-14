@@ -17,21 +17,15 @@ export default function Signup() {
   useEffect(() => {
     const storedUserId = localStorage.getItem('lineUserId');
     const liffParams = JSON.parse(localStorage.getItem('liffParams'));
-    const router = useRouter();
-    
-    useEffect(() => {
-      const queryParams = new URLSearchParams(window.location.search);
-      const code = queryParams.get('code');
-      const state = queryParams.get('state');
-      
-      // Now you can use code and state in the signup process if needed
-      console.log(code, state);
-    }, []);
     if (storedUserId) setLineUserId(storedUserId);
 
     // Check if query params exist to keep them in the URL
-    if (liffParams) {
-      const queryString = new URLSearchParams(liffParams).toString();
+    const urlParams = new URLSearchParams(window.location.search);
+    const code = urlParams.get('code');
+    const state = urlParams.get('state');
+
+    if (code && state) {
+      const queryString = new URLSearchParams({ code, state }).toString();
       router.replace(`/signup?${queryString}`);
     }
   }, []);
@@ -59,10 +53,16 @@ export default function Signup() {
   };
 
   const goBackToLogin = () => {
-    // Clear any existing message before navigating back to login
-    const liffParams = JSON.parse(localStorage.getItem('liffParams'));
-    const queryString = new URLSearchParams(liffParams).toString();
-    router.push(`/?${queryString}`);
+    // Retain code and state params in the URL when navigating back to Login
+    const urlParams = new URLSearchParams(window.location.search);
+    const code = urlParams.get('code');
+    const state = urlParams.get('state');
+
+    if (code && state) {
+      router.push(`/?code=${code}&state=${state}`);
+    } else {
+      router.push(`/`);
+    }
   };
 
   return (
@@ -71,7 +71,7 @@ export default function Signup() {
 
         {/* Cute illustration and background elements */}
         <div className="absolute top-0 left-0 w-full h-full rounded-3xl bg-pink-100 opacity-30 z-0 pointer-events-none"></div>
-        
+
         {/* Back Button */}
         <button 
           onClick={goBackToLogin}
@@ -139,4 +139,4 @@ export default function Signup() {
       </div>
     </div>
   );
-};
+}

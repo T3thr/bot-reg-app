@@ -2,26 +2,26 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import liff from '@line/liff';
-import { FaSignOutAlt, FaRegRegistered, FaCheckCircle, FaPlusCircle } from 'react-icons/fa';
+import { FaUserCircle, FaSignOutAlt, FaRegRegistered, FaCheckCircle, FaPlusCircle } from 'react-icons/fa';
 import styles from './Login.module.css';
 
 export default function Login() {
   const [profile, setProfile] = useState(null);
   const [grades, setGrades] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [hasAddedLineOA, setHasAddedLineOA] = useState(false); // New state to track Line OA addition
+  const [hasAddedLineOA, setHasAddedLineOA] = useState(false); // Track Line OA addition
   const router = useRouter();
   const lineOAUrl = "https://access.line.me/oauth2/v2.1/authorize?response_type=code&client_id=2006561325&redirect_uri=https://bot-reg-app.vercel.app&state=12345abcde&scope=profile%20openid%20email&bot_prompt=aggressive&nonce=09876xyz";
 
   useEffect(() => {
-    const queryParams = new URLSearchParams(window.location.search);
-    const code = queryParams.get('code');
-    const state = queryParams.get('state');
+    // Extract 'code' and 'state' from the URL when the user is redirected from LIFF
+    const urlParams = new URLSearchParams(window.location.search);
+    const code = urlParams.get('code');
+    const state = urlParams.get('state');
 
-    // Store code and state in the URL (this will preserve it when navigating to signup)
     if (code && state) {
-      const newUrl = `${window.location.origin}${window.location.pathname}?code=${code}&state=${state}`;
-      window.history.replaceState({}, '', newUrl);
+      // Store the code and state in the URL for later usage
+      window.history.replaceState({}, '', `${window.location.pathname}?code=${code}&state=${state}`);
     }
 
     liff.init({ liffId: process.env.NEXT_PUBLIC_LIFF_ID }).then(async () => {
@@ -30,17 +30,15 @@ export default function Login() {
         setProfile(profileData);
         localStorage.setItem('lineUserId', profileData.userId);
 
-        // Check if the user has already added the Line OA
         const lineOAStatus = localStorage.getItem('lineOAAdded');
         if (lineOAStatus) {
-          setHasAddedLineOA(true); // Set state to true if Line OA added
+          setHasAddedLineOA(true);
         } else {
-          // Automatically redirect to add LineOA if not already added
           window.location.href = lineOAUrl;
-          localStorage.setItem('lineOAAdded', 'true'); // Flag to prevent repeated redirects
+          localStorage.setItem('lineOAAdded', 'true');
         }
       } else {
-        liff.login(); // Trigger LINE login if not already logged in
+        liff.login();
       }
     });
   }, []);
@@ -49,12 +47,12 @@ export default function Login() {
     liff.logout();
     localStorage.removeItem('lineUserId');
     localStorage.removeItem('liffParams');
-    localStorage.removeItem('lineOAAdded'); // Reset the flag on logout
+    localStorage.removeItem('lineOAAdded');
     window.location.reload();
   };
 
   const navigateToRegister = () => {
-    router.push(`/signup`);
+    router.push('/signup');
   };
 
   const handleCheckGrade = async () => {
@@ -111,7 +109,7 @@ export default function Login() {
           >
             {loading ? 'Checking...' : <><FaCheckCircle className={styles.icon} /> Check Grade</>}
           </button>
-          
+
           {/* Conditionally render Add Line OA button */}
           {!hasAddedLineOA && (
             <button className={`${styles.btn} ${styles.btnAddLineOA}`} onClick={handleAddLineOA}>
