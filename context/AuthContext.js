@@ -15,6 +15,7 @@ export const AuthProvider = ({ children }) => {
   const [role, setRole] = useState("user"); // Default role to "user"
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [lineUserId, setLineUserId] = useState('');
   const router = useRouter();
 
   useEffect(() => {
