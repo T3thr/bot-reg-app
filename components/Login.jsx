@@ -44,7 +44,7 @@ export default function Login() {
   const navigateToRegister = () => {
     const liffParams = JSON.parse(localStorage.getItem('liffParams'));
     const queryString = new URLSearchParams(liffParams).toString();
-    router.push(`/signup`);
+    router.push(`/register?${queryString}`);
   };
 
   const handleCheckGrade = async () => {
@@ -84,14 +84,14 @@ export default function Login() {
           </div>
         </div>
         <div className={styles.buttonGroup}>
-          <button className={${styles.btn} ${styles.btnLogout}} onClick={handleLogout}>
+          <button className={`${styles.btn} ${styles.btnLogout}`} onClick={handleLogout}>
             <FaSignOutAlt className={styles.icon} /> Logout
           </button>
-          <button className={${styles.btn} ${styles.btnRegister}} onClick={navigateToRegister}>
+          <button className={`${styles.btn} ${styles.btnRegister}`} onClick={navigateToRegister}>
             <FaRegRegistered className={styles.icon} /> Go to Register
           </button>
           <button
-            className={${styles.btn} ${styles.btnCheckGrade}}
+            className={`${styles.btn} ${styles.btnCheckGrade}`}
             onClick={handleCheckGrade}
             disabled={loading}
           >
