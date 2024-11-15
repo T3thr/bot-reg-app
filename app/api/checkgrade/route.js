@@ -1,57 +1,101 @@
-import { NextResponse } from 'next/server';
-import { MongoClient } from 'mongodb';
+// pages/api/checkgrade.js
+import puppeteer from 'puppeteer';
+import User from '../../models/User'; // Import your MongoDB User model
 
-// Assuming you are using MongoDB for storing user data
-const client = new MongoClient(process.env.MONGODB_URI);
-const dbName = 'yourDatabaseName'; // Replace with your database name
-const collectionName = 'users'; // Assuming the user collection is named 'users'
-
-export async function GET(request) {
-  // Get the `lineUserId` from the URL query string
-  const { searchParams } = new URL(request.url);
-  const lineUserId = searchParams.get('lineUserId');
+export default async function handler(req, res) {
+  const { lineUserId } = req.query; // Get lineUserId from the query parameter
 
   if (!lineUserId) {
-    return NextResponse.json({ error: 'LINE User ID is required.' }, { status: 400 });
+    return res.status(400).json({ error: 'lineUserId is required' });
   }
 
   try {
-    // Connect to MongoDB
-    await client.connect();
-    const db = client.db(dbName);
-    const usersCollection = db.collection(collectionName);
-
-    // Fetch the user's credentials (e.g., username, password, etc.) based on `lineUserId`
-    const user = await usersCollection.findOne({ lineUserId });
-
+    // 1. Find the user credentials by lineUserId
+    const user = await User.findOne({ lineUserId });
     if (!user) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+      return res.status(404).json({ error: 'User not found' });
     }
 
-    // Assuming you have a function to scrape grades or retrieve grades from an external source
-    const grades = await fetchGradesFromExternalSource(user.username, user.password);
+    // 2. Launch Puppeteer and login to the grade portal using credentials
+    const browser = await puppeteer.launch({ headless: true });
+    const page = await browser.newPage();
 
-    // Return grades to the frontend
-    return NextResponse.json({ success: true, grades });
+    // Go to the login page
+    await page.goto('https://reg9.nu.ac.th/registrar/login_ssl.asp?avs224389944=6');
+
+    // Type in the username and password and submit the form
+    await page.type('input[name="username"]', user.username);
+    await page.type('input[name="password"]', user.password);
+    await page.click('button[type="submit"]'); // Submit the form
+
+    // Wait for navigation to the grade page
+    await page.waitForNavigation();
+
+    // 3. Scrape the grade page
+    await page.goto('https://reg9.nu.ac.th/registrar/grade.asp?avs224389636=41');
+    await page.waitForSelector('table'); // Wait for tables to load
+
+    const gradeData = await page.evaluate(() => {
+      const tables = document.querySelectorAll('table');
+      const semesterGrades = [];
+
+      // Loop through each table (semester)
+      tables.forEach((table, index) => {
+        const semester = { semester: `Semester ${index + 1}`, subjects: [] };
+        const rows = table.querySelectorAll('tr[valign="TOP"]');
+        
+        // Loop through each subject in the semester
+        rows.forEach(row => {
+          const gradeField = row.querySelector('font[size="2"]');
+          const gradeText = gradeField ? gradeField.textContent.trim() : '';
+          
+          // Check for special conditions
+          const isEVal = row.innerHTML.includes('<span style="color:#92a8d1;background-color:red">e-val</span>');
+          
+          semester.subjects.push({
+            grade: gradeText || 'No Grade',
+            isEVal,
+          });
+        });
+
+        semesterGrades.push(semester);
+      });
+
+      return semesterGrades;
+    });
+
+    await browser.close();
+
+    // 4. Analyze grades for leaks and send notifications
+    const analysis = analyzeGrades(gradeData);
+    
+    // 5. Return the analyzed data
+    res.status(200).json({ success: true, grades: gradeData, analysis });
 
   } catch (error) {
-    console.error('Error fetching grades:', error);
-    return NextResponse.json({ error: 'Failed to fetch grades.' }, { status: 500 });
-  } finally {
-    await client.close();
+    console.error(error);
+    res.status(500).json({ error: 'An error occurred while checking grades.' });
   }
 }
 
-// Assuming this function fetches grade data from an external source
-async function fetchGradesFromExternalSource(username, password) {
-  // Implement the logic to scrape or fetch grades using the username and password
-  // You can use libraries like puppeteer, axios, or a similar approach to scrape grade data
-  // Here's a simple mock example:
+// Function to analyze grades and detect leaks, e-val, and changes
+function analyzeGrades(gradeData) {
+  let message = '';
+  let eValMessage = '';
+  let gradeLeaks = 0;
 
-  // Mocked response for demo purposes
-  return [
-    { subject: 'Math', grade: 'A' },
-    { subject: 'Science', grade: 'B+' },
-    { subject: 'History', grade: 'A-' },
-  ];
+  gradeData.forEach((semester) => {
+    const totalSubjects = semester.subjects.length;
+    const gradedSubjects = semester.subjects.filter(subject => subject.grade !== 'No Grade').length;
+    gradeLeaks += semester.subjects.filter(subject => subject.grade !== 'No Grade').length;
+    message += `${semester.semester} has ${gradedSubjects} out of ${totalSubjects} subjects with grades.\n`;
+
+    // Check for e-val
+    const eValSubjects = semester.subjects.filter(subject => subject.isEVal);
+    if (eValSubjects.length > 0) {
+      eValMessage += `In ${semester.semester}, you have ${eValSubjects.length} e-val subjects. Please review them to see your grade correctly.\n`;
+    }
+  });
+
+  return { message, eValMessage, gradeLeaks };
 }

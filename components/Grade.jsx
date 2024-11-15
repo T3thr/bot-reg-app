@@ -10,19 +10,19 @@ export default function Grade() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [lineUserId, setLineUserId] = useState(null);
+  const [analysis, setAnalysis] = useState(null);  // To store analysis results (message, eValMessage)
   const router = useRouter();
 
   useEffect(() => {
-    // Fetch lineUserId from URL or localStorage
     const userIdFromUrl = new URLSearchParams(window.location.search).get('lineUserId');
     if (userIdFromUrl) {
       setLineUserId(userIdFromUrl);
-      fetchGrades(userIdFromUrl);  // Fetch grades after getting user ID
+      fetchGrades(userIdFromUrl);
     } else {
       const userIdFromStorage = localStorage.getItem('lineUserId');
       if (userIdFromStorage) {
         setLineUserId(userIdFromStorage);
-        fetchGrades(userIdFromStorage);  // Fetch grades after getting user ID
+        fetchGrades(userIdFromStorage);
       } else {
         setError('No LINE User ID found.');
         setLoading(false);
@@ -40,6 +40,7 @@ export default function Grade() {
       const data = await response.json();
       if (data.success) {
         setGrades(data.grades);
+        setAnalysis(data.analysis);  // Set the analysis data
       } else {
         setError(data.error || 'Failed to fetch grades.');
       }
@@ -57,6 +58,11 @@ export default function Grade() {
     <div className={styles.gradesContainer}>
       <h1>Grade Results</h1>
       <pre>{JSON.stringify(grades, null, 2)}</pre>
+
+      <div className={styles.analysis}>
+        <p>{analysis?.message}</p>
+        {analysis?.eValMessage && <p className={styles.eVal}>{analysis.eValMessage}</p>}
+      </div>
     </div>
   );
 }
