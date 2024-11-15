@@ -1,10 +1,11 @@
 import NextAuth from 'next-auth';
+import CredentialsProvider from "next-auth/providers/credentials";
 import mongodbConnect from '@/backend/lib/mongodb';
 import User from '@/backend/models/User';
 
 export const options = {
   providers: [
-    Providers.Credentials({
+    CredentialsProvider({
       // LINE OAuth Provider
       id: 'line',
       name: 'LINE',
@@ -76,4 +77,4 @@ export const options = {
   },
 };
 
-export default NextAuth(authOptions);
+export default options;
