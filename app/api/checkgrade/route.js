@@ -1,93 +1,57 @@
-import puppeteer from 'puppeteer';
-import mongodbConnect from '@/backend/lib/mongodb';
-import User from '@/backend/models/User';
-import GradeState from '@/backend/models/GradeState';
-import axios from 'axios';
+import { NextResponse } from 'next/server';
+import { MongoClient } from 'mongodb';
 
-const scrapeGrades = async (username, password) => {
-  const browser = await puppeteer.launch();
-  const page = await browser.newPage();
+// Assuming you are using MongoDB for storing user data
+const client = new MongoClient(process.env.MONGODB_URI);
+const dbName = 'yourDatabaseName'; // Replace with your database name
+const collectionName = 'users'; // Assuming the user collection is named 'users'
 
-  // Step 1: Log into the grade portal
-  await page.goto('https://reg9.nu.ac.th/registrar/login_ssl.asp?avs224389944=6');
-  await page.type('input[name="f_uid"]', username);
-  await page.type('input[name="f_pwd"]', password);
-  await page.keyboard.press('Enter');
-  await page.waitForNavigation();
+export async function GET(request) {
+  // Get the `lineUserId` from the URL query string
+  const { searchParams } = new URL(request.url);
+  const lineUserId = searchParams.get('lineUserId');
 
-  // Step 2: Navigate to the grades page
-  await page.goto('https://reg9.nu.ac.th/registrar/grade.asp?avs224389636=41');
-
-  // Step 3: Extract grade data for each semester
-  const grades = await page.evaluate(() => {
-    const semesterGrades = {};
-    const tables = document.querySelectorAll('table[border="0"][width="70%"]');
-
-    tables.forEach((table, index) => {
-      const semesterName = `semester${index + 1}`;
-      semesterGrades[semesterName] = {
-        totalSubjects: 0,
-        gradedSubjects: 0,
-        eValSubjects: 0,
-        subjects: [],
-      };
-
-      const rows = table.querySelectorAll('tr[valign="TOP"][bgcolor="#F6F6FF"]');
-      rows.forEach((row) => {
-        const gradeField = row.querySelector('font[face="Tahoma, Arial, Helvetica"][size="2"]');
-        const gradeText = gradeField ? gradeField.textContent.trim() : '';
-
-        // Check if the grade requires evaluation
-        if (gradeField && gradeField.style.color === '#92a8d1' && gradeField.style.backgroundColor === 'red') {
-          semesterGrades[semesterName].eValSubjects++;
-          semesterGrades[semesterName].subjects.push('e-val');
-        } else if (gradeText && gradeText !== '&nbsp;&nbsp;' && gradeText !== '') {
-          semesterGrades[semesterName].gradedSubjects++;
-          semesterGrades[semesterName].subjects.push(gradeText);
-        } else {
-          semesterGrades[semesterName].subjects.push('unknown');
-        }
-        semesterGrades[semesterName].totalSubjects++;
-      });
-    });
-    return semesterGrades;
-  });
-
-  await browser.close();
-  return grades;
-};
-
-export default async function handler(req, res) {
-  await mongodbConnect();
-
-  if (req.method === 'GET') {
-    const { lineUserId } = req.query;
-
-    if (!lineUserId) {
-      return res.status(400).json({ success: false, error: 'No lineUserId provided' });
-    }
-
-    const user = await User.findOne({ lineUserId }).lean();
-    if (!user) {
-      return res.status(404).json({ success: false, error: 'User not found' });
-    }
-
-    try {
-      const grades = await scrapeGrades(user.username, user.password);
-      
-      // Store or update grade state in MongoDB
-      await GradeState.updateOne(
-        { lineUserId },
-        { grades, lastChecked: new Date() },
-        { upsert: true }
-      );
-
-      return res.status(200).json({ success: true, grades });
-    } catch (error) {
-      console.error('Error scraping grades:', error);
-      return res.status(500).json({ success: false, error: 'Failed to scrape grades' });
-    }
+  if (!lineUserId) {
+    return NextResponse.json({ error: 'LINE User ID is required.' }, { status: 400 });
   }
 
-  return res.status(405).json({ success: false, error: 'Method not allowed' });
+  try {
+    // Connect to MongoDB
+    await client.connect();
+    const db = client.db(dbName);
+    const usersCollection = db.collection(collectionName);
+
+    // Fetch the user's credentials (e.g., username, password, etc.) based on `lineUserId`
+    const user = await usersCollection.findOne({ lineUserId });
+
+    if (!user) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    }
+
+    // Assuming you have a function to scrape grades or retrieve grades from an external source
+    const grades = await fetchGradesFromExternalSource(user.username, user.password);
+
+    // Return grades to the frontend
+    return NextResponse.json({ success: true, grades });
+
+  } catch (error) {
+    console.error('Error fetching grades:', error);
+    return NextResponse.json({ error: 'Failed to fetch grades.' }, { status: 500 });
+  } finally {
+    await client.close();
+  }
+}
+
+// Assuming this function fetches grade data from an external source
+async function fetchGradesFromExternalSource(username, password) {
+  // Implement the logic to scrape or fetch grades using the username and password
+  // You can use libraries like puppeteer, axios, or a similar approach to scrape grade data
+  // Here's a simple mock example:
+
+  // Mocked response for demo purposes
+  return [
+    { subject: 'Math', grade: 'A' },
+    { subject: 'Science', grade: 'B+' },
+    { subject: 'History', grade: 'A-' },
+  ];
 }
