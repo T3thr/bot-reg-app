@@ -71,7 +71,7 @@ export const authOptions = {
     },
   },
   pages: {
-    signIn: '/login', // Redirect to your login page
+    signIn: 'https://liff.line.me/2006561325-nAPmNdbv', // Redirect to your login page
     error: '/error', // Handle errors here
   },
 };
