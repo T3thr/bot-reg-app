@@ -1,4 +1,4 @@
-import { getServerSession } from 'next-auth';
+import { getServerSession } from 'next-auth/next'
 import { options } from '@/app/api/auth/[...nextauth]/options'; // Import session handling options
 import { redirect } from 'next/navigation'; // For redirecting to login if no session
 import styles from './Grade.module.css';
