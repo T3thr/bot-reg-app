@@ -18,7 +18,9 @@ export function GradeProvider({ children }) {
   const fetchGrades = async (lineUserId) => {
     setLoading(true);
     try {
-      const response = await axios.get(`/api/checkgrade?lineUserId=${lineUserId}`);
+        const apiUrl = process.env.NEXT_PUBLIC_API_BASE_URL || ''; // Use the base URL or fallback to an empty string
+        const response = await axios.get(`${apiUrl}/api/checkgrade?lineUserId=${lineUserId}`);
+        
       if (response.data.success) {
         setGrades(response.data.grades);
         setAnalysis(response.data.analysis); // Store the analysis result
