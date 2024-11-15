@@ -13,7 +13,7 @@ export function GradeProvider({ children }) {
 
     try {
       const response = await fetch('/api/checkgrade', {
-        method: 'GET',
+        method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ lineUserId }),
       });
