@@ -36,7 +36,7 @@ export default function Login() {
   const navigateToCheckGrade = () => {
     const lineUserId = profile?.userId || localStorage.getItem('lineUserId');
     if (lineUserId) {
-      router.push(`/grades?lineUserId=${lineUserId}`);
+      router.push(`/grade?lineUserId=${lineUserId}`);
     } else {
       alert('Unable to retrieve LINE User ID. Please login again.');
     }
