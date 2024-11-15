@@ -1,43 +1,39 @@
+// context/GradeContext.js
 'use client';
-import { createContext, useContext, useState } from 'react';
+
+import { createContext, useContext, useState, useEffect } from 'react';
+import axios from 'axios';
 
 const GradeContext = createContext();
 
-export function GradeProvider({ children }) {
+export const GradeProvider = ({ children }) => {
   const [grades, setGrades] = useState(null);
-  const [loading, setLoading] = useState(false);
+  const [analysis, setAnalysis] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  const checkGrade = async (lineUserId) => {
+  const fetchGrades = async (lineUserId) => {
     setLoading(true);
-    setGrades(null);
-
     try {
-      const response = await fetch('/api/checkgrade', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ lineUserId }),
-      });
-
-      const data = await response.json();
-      if (data.success) {
-        setGrades(data.grades);
+      const response = await axios.get(`/api/checkgrade?lineUserId=${lineUserId}`);
+      if (response.data.success) {
+        setGrades(response.data.grades);
+        setAnalysis(response.data.analysis);
       } else {
-        setGrades({ error: data.error || 'Grade check failed or user not registered' });
+        setError(response.data.error || 'Failed to fetch grades.');
       }
-    } catch (error) {
-      setGrades({ error: 'An error occurred while checking grades' });
+    } catch (err) {
+      setError('An error occurred while fetching grades.');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <GradeContext.Provider value={{ grades, loading, checkGrade }}>
+    <GradeContext.Provider value={{ grades, analysis, loading, error, fetchGrades }}>
       {children}
     </GradeContext.Provider>
   );
-}
+};
 
-export function useGrade() {
-  return useContext(GradeContext);
-}
+export const useGrade = () => useContext(GradeContext);

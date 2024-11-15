@@ -3,53 +3,30 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { useGrade } from '@/context/GradeContext';  // Import the context hook
 import styles from './Grade.module.css';
 
 export default function Grade() {
-  const [grades, setGrades] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
   const [lineUserId, setLineUserId] = useState(null);
-  const [analysis, setAnalysis] = useState(null);  // To store analysis results (message, eValMessage)
+  const { grades, analysis, loading, error, fetchGrades } = useGrade();  // Use context values and fetchGrades function
+
   const router = useRouter();
 
   useEffect(() => {
     const userIdFromUrl = new URLSearchParams(window.location.search).get('lineUserId');
     if (userIdFromUrl) {
       setLineUserId(userIdFromUrl);
-      fetchGrades(userIdFromUrl);
+      fetchGrades(userIdFromUrl);  // Fetch grades using context function
     } else {
       const userIdFromStorage = localStorage.getItem('lineUserId');
       if (userIdFromStorage) {
         setLineUserId(userIdFromStorage);
-        fetchGrades(userIdFromStorage);
+        fetchGrades(userIdFromStorage);  // Fetch grades using context function
       } else {
         setError('No LINE User ID found.');
-        setLoading(false);
       }
     }
-  }, []);
-
-  const fetchGrades = async (lineUserId) => {
-    setLoading(true);
-    try {
-      const response = await fetch(`/api/checkgrade?lineUserId=${lineUserId}`, {
-        method: 'GET',
-      });
-
-      const data = await response.json();
-      if (data.success) {
-        setGrades(data.grades);
-        setAnalysis(data.analysis);  // Set the analysis data
-      } else {
-        setError(data.error || 'Failed to fetch grades.');
-      }
-    } catch (err) {
-      setError('An error occurred while fetching grades.');
-    } finally {
-      setLoading(false);
-    }
-  };
+  }, [fetchGrades]);
 
   if (loading) return <p>Loading grades...</p>;
   if (error) return <p className={styles.error}>{error}</p>;
