@@ -1,35 +1,35 @@
 'use client';
 
-import { useSession } from 'next-auth/react';
 import { useState, useEffect } from 'react';
-import styles from './Grade.module.css';
+import { useSearchParams } from 'next/navigation';
+import styles from './Grade.module.css'
+
 
 export default function Grade() {
-  const { data: session, status } = useSession(); // Get session info from NextAuth
   const [grades, setGrades] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const searchParams = useSearchParams();
+  const lineUserId = searchParams.get('lineUserId');
 
   useEffect(() => {
-    // Wait until session is fully loaded
-    if (status === 'loading') return;
-
-    if (!session || !session.user?.id) {
-      setError('You need to be logged in to view grades.');
+    if (!lineUserId) {
+      setError('No LINE User ID provided.');
       setLoading(false);
       return;
     }
 
     const fetchGrades = async () => {
       try {
-        // Fetch grades using the LINE User ID from the session
-        const response = await fetch(`/api/checkgrade?lineUserId=${session.user.id}`, {
-          method: 'GET',
+        const response = await fetch('/api/checkgrade', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ lineUserId }),
         });
 
         const data = await response.json();
         if (data.success) {
-          setGrades(data.grades);
+          setGrades(data.notification);
         } else {
           setError(data.error || 'Failed to fetch grades.');
         }
@@ -41,7 +41,7 @@ export default function Grade() {
     };
 
     fetchGrades();
-  }, [session, status]);
+  }, [lineUserId]);
 
   if (loading) return <p>Loading grades...</p>;
 

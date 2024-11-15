@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useSession } from 'next-auth/react'; // Using NextAuth session only
+import { useSession } from 'next-auth/react';
+import liff from '@line/liff';
 import { FaUserCircle, FaSignOutAlt, FaRegRegistered, FaCheckCircle } from 'react-icons/fa';
 import styles from './Login.module.css';
 
@@ -24,22 +25,21 @@ export default function Login() {
       });
     } else {
       // If not logged in, trigger LIFF login
-      const fetchProfile = async () => {
-        const res = await fetch('/api/auth/session'); // Call to session API to retrieve the profile
-        const profileData = await res.json();
-        if (profileData?.user?.id) {
-          setProfile(profileData.user);
+      liff.init({ liffId: process.env.NEXT_PUBLIC_LIFF_ID }).then(async () => {
+        if (liff.isLoggedIn()) {
+          const profileData = await liff.getProfile();
+          setProfile(profileData);
+          localStorage.setItem('lineUserId', profileData.userId); // Save user ID
         } else {
-          alert('Unable to retrieve profile. Please log in again.');
+          liff.login(); // Trigger login if not logged in
         }
-      };
-      fetchProfile();
+      });
     }
-  }, [status, session]);
+  }, [status, session, router]);
 
-  const handleLogout = async () => {
-    // Trigger sign-out using LIFF through NextAuth signOut method
-    await fetch('/api/auth/signout', { method: 'POST' });
+  const handleLogout = () => {
+    liff.logout();
+    localStorage.removeItem('lineUserId');
     window.location.reload();
   };
 

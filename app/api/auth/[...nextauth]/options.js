@@ -22,7 +22,6 @@ export const options = {
       token: 'https://api.line.me/oauth2/v2.1/token',
       userinfo: 'https://api.line.me/v2/profile',
       async profile(profile) {
-        // Profile mapping from LINE OAuth
         return {
           id: profile.userId,
           name: profile.displayName,
@@ -38,7 +37,6 @@ export const options = {
   },
   callbacks: {
     async jwt({ token, account, profile }) {
-      // Automatically handle the LIFF login session via JWT token
       if (account && profile) {
         token.id = profile.userId;
         token.name = profile.displayName;
@@ -47,7 +45,6 @@ export const options = {
       return token;
     },
     async session({ session, token }) {
-      // Append user data to session
       session.user.id = token.id;
       session.user.name = token.name;
       session.user.image = token.picture;
@@ -56,7 +53,7 @@ export const options = {
   },
   events: {
     async signIn({ user, account, profile }) {
-      // You can add logic here to handle sign-in events if needed
+      // LIFF login handling can be done here, but no need to handle user creation with MongoDB
     },
   },
   pages: {
@@ -64,9 +61,10 @@ export const options = {
     error: '/error', // Handle errors here
   },
   async adapter() {
-    // Configure LIFF initialization within NextAuth
+    // Initialize LIFF
     await liff.init({ liffId: process.env.NEXT_PUBLIC_LIFF_ID });
 
+    // Check if the user is logged in via LIFF
     if (liff.isLoggedIn()) {
       const profile = await liff.getProfile();
       return {
@@ -75,14 +73,13 @@ export const options = {
         image: profile.pictureUrl,
       };
     } else {
-      liff.login();
+      liff.login(); // Trigger login if not logged in
     }
   },
   async signOut() {
-    // Use liff.logout to handle sign out
-    await liff.logout();
-    window.location.reload();
-  },
+    // Handle sign-out using LIFF
+    liff.logout();
+  }
 };
 
 export default options;
