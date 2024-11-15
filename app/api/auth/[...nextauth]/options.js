@@ -71,8 +71,23 @@ export const authOptions = {
     },
   },
   pages: {
-    signIn: 'https://liff.line.me/2006561325-nAPmNdbv', // Redirect to your login page
+    signIn: 'https://liff.line.me/2006561325-nAPmNdbv', // Redirect to your LIFF login page
     error: '/error', // Handle errors here
+  },
+  async adapter() {
+    // Configure LIFF initialization within NextAuth
+    await liff.init({ liffId: process.env.NEXT_PUBLIC_LIFF_ID });
+
+    if (liff.isLoggedIn()) {
+      const profile = await liff.getProfile();
+      return {
+        id: profile.userId,
+        name: profile.displayName,
+        image: profile.pictureUrl,
+      };
+    } else {
+      liff.login();
+    }
   },
 };
 
