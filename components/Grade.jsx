@@ -1,29 +1,26 @@
+// components/Grade.jsx
 'use client';
 
-import { useSession } from 'next-auth/react';
+import { useLiffSession } from '@/context/LiffSessionContext';
 import { useState, useEffect } from 'react';
 import styles from './Grade.module.css';
 
 export default function Grade() {
-  const { data: session, status } = useSession(); // Get session info from NextAuth
+  const { lineUserId, profile, loading } = useLiffSession(); // Use the LiffSessionContext
   const [grades, setGrades] = useState(null);
-  const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    // Wait until session is fully loaded
-    if (status === 'loading') return;
+    if (loading) return; // Wait until LIFF is initialized
 
-    if (!session || !session.user?.id) {
+    if (!lineUserId) {
       setError('You need to be logged in to view grades.');
-      setLoading(false);
       return;
     }
 
     const fetchGrades = async () => {
       try {
-        // Fetch grades using the LINE User ID from the session
-        const response = await fetch(`/api/checkgrade?lineUserId=${session.user.id}`, {
+        const response = await fetch(`/api/checkgrade?lineUserId=${lineUserId}`, {
           method: 'GET',
         });
 
@@ -35,15 +32,13 @@ export default function Grade() {
         }
       } catch (err) {
         setError('An error occurred while fetching grades.');
-      } finally {
-        setLoading(false);
       }
     };
 
     fetchGrades();
-  }, [session, status]);
+  }, [lineUserId, loading]);
 
-  if (loading) return <p>Loading grades...</p>;
+  if (loading) return <p>Loading...</p>;
 
   if (error) return <p className={styles.error}>{error}</p>;
 
