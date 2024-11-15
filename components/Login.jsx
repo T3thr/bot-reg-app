@@ -1,43 +1,56 @@
-// components/Login.jsx
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 import liff from '@line/liff';
 import { FaUserCircle, FaSignOutAlt, FaRegRegistered, FaCheckCircle } from 'react-icons/fa';
 import styles from './Login.module.css';
 
 export default function Login() {
+  const { data: session, status } = useSession(); // Use session from NextAuth
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
-    liff.init({ liffId: process.env.NEXT_PUBLIC_LIFF_ID }).then(async () => {
-      if (liff.isLoggedIn()) {
-        const profileData = await liff.getProfile();
-        setProfile(profileData);
-        localStorage.setItem('lineUserId', profileData.userId); // Save user ID in localStorage
-      } else {
-        liff.login(); // If not logged in, trigger the LINE login
-      }
-    });
-  }, []);
+    if (status === 'loading') return; // Wait for session status to be loaded
+
+    if (session?.user?.id) {
+      // If user is logged in via session, use session data
+      setProfile({
+        userId: session.user.id,
+        displayName: session.user.name,
+        pictureUrl: session.user.image,
+      });
+    } else {
+      // If not logged in, trigger LIFF login
+      liff.init({ liffId: process.env.NEXT_PUBLIC_LIFF_ID }).then(async () => {
+        if (liff.isLoggedIn()) {
+          const profileData = await liff.getProfile();
+          setProfile(profileData);
+          localStorage.setItem('lineUserId', profileData.userId); // Save user ID
+          router.push('/grade'); // Redirect to the grade page
+        } else {
+          liff.login(); // Trigger login if not logged in
+        }
+      });
+    }
+  }, [status, session, router]);
 
   const handleLogout = () => {
     liff.logout();
     localStorage.removeItem('lineUserId');
-    window.location.reload();
+    router.push('/login'); // Redirect to login page after logout
   };
 
   const navigateToRegister = () => {
-    router.push(`/signup`);
+    router.push('/signup');
   };
 
   const navigateToCheckGrade = () => {
-    const lineUserId = profile?.userId || localStorage.getItem('lineUserId');
-    if (lineUserId) {
-      router.push(`/grade?lineUserId=${lineUserId}`);
+    if (profile) {
+      router.push(`/grade`);
     } else {
       alert('Unable to retrieve LINE User ID. Please login again.');
     }

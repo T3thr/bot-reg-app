@@ -2,16 +2,15 @@ import NextAuth from 'next-auth';
 import CredentialsProvider from "next-auth/providers/credentials";
 import mongodbConnect from '@/backend/lib/mongodb';
 import User from '@/backend/models/User';
+import liff from '@line/liff';
 
-export const options = {
+export const authOptions = {
   providers: [
     CredentialsProvider({
-      // LINE OAuth Provider
       id: 'line',
       name: 'LINE',
       type: 'oauth',
-      version: '2.0',
-      wellKnown: 'https://access.line.me/.well-known/openid-configuration',
+      version: '2.1',
       clientId: process.env.LINE_CHANNEL_ID, // Your LINE Channel ID
       clientSecret: process.env.LINE_CHANNEL_SECRET, // Your LINE Channel Secret
       authorization: {
@@ -19,29 +18,29 @@ export const options = {
         params: {
           response_type: 'code',
           scope: 'profile openid',
-          nonce: 'unique_nonce', // Unique identifier for each request
+          nonce: 'unique_nonce',
         },
       },
       token: 'https://api.line.me/oauth2/v2.1/token',
       userinfo: 'https://api.line.me/v2/profile',
-      profile(profile) {
-        // Map profile from LINE response
+      async profile(profile) {
+        // Profile mapping from LINE OAuth
         return {
           id: profile.userId,
           name: profile.displayName,
-          email: null, // LINE doesn't provide email by default
+          email: null, // Email is not provided in LINE profile by default
           image: profile.pictureUrl,
         };
       },
     }),
   ],
-  secret: process.env.NEXTAUTH_SECRET, // Secure secret for token signing
+  secret: process.env.NEXTAUTH_SECRET, // Ensure a secure secret for JWT tokens
   session: {
     strategy: 'jwt',
   },
   callbacks: {
     async jwt({ token, account, profile }) {
-      // Append LINE OAuth data to token
+      // Automatically handle the LIFF login session via JWT token
       if (account && profile) {
         token.id = profile.userId;
         token.name = profile.displayName;
@@ -50,7 +49,7 @@ export const options = {
       return token;
     },
     async session({ session, token }) {
-      // Add token data to session
+      // Append user data to session
       session.user.id = token.id;
       session.user.name = token.name;
       session.user.image = token.picture;
@@ -59,22 +58,22 @@ export const options = {
   },
   events: {
     async signIn({ user, account, profile }) {
-      // Ensure user is stored in MongoDB after login
+      // Ensure the user is stored in the database after successful sign-in
       await mongodbConnect();
       const existingUser = await User.findOne({ lineUserId: profile.userId });
       if (!existingUser) {
         await User.create({
           lineUserId: profile.userId,
-          username: '', // This can be populated later by the user
-          password: '', // This can be populated later by the user
+          username: '', // Placeholder for username
+          password: '', // Placeholder for password
         });
       }
     },
   },
   pages: {
-    signIn: '/login', // Redirect to your custom login page
-    error: '/error', // Redirect to a custom error page
+    signIn: '/login', // Redirect to your login page
+    error: '/error', // Handle errors here
   },
 };
 
-export default options;
+export default NextAuth(authOptions);
