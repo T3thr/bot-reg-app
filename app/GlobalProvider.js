@@ -2,7 +2,7 @@
 
 import { SessionProvider } from "next-auth/react";
 import { AuthProvider } from "@/context/AuthContext";
-import { GradeProvider } from './context/GradeContext';
+import { GradeProvider } from '@/context/GradeContext';
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
