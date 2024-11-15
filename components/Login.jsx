@@ -40,7 +40,6 @@ export default function Login() {
   const handleLogout = () => {
     liff.logout();
     localStorage.removeItem('lineUserId');
-    router.push('/login'); // Redirect to login page after logout
   };
 
   const navigateToRegister = () => {
