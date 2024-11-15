@@ -1,19 +1,17 @@
 'use client';
 import { useEffect, useState } from 'react';
-import { useRouter  } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import liff from '@line/liff';
 import { FaUserCircle, FaSignOutAlt, FaRegRegistered, FaCheckCircle } from 'react-icons/fa';
+import { useGrade } from './context/GradeContext';
 import styles from './Login.module.css';
 
 export default function Login() {
   const [profile, setProfile] = useState(null);
-  const [grades, setGrades] = useState(null);
-  const [loading, setLoading] = useState(false);
+  const { grades, loading, checkGrade } = useGrade();
   const router = useRouter();
 
-
   useEffect(() => {
-
     liff.init({ liffId: process.env.NEXT_PUBLIC_LIFF_ID }).then(async () => {
       if (liff.isLoggedIn()) {
         const profileData = await liff.getProfile();
@@ -35,32 +33,12 @@ export default function Login() {
     router.push(`/signup`);
   };
 
-  const handleCheckGrade = async () => {
+  const handleCheckGrade = () => {
     if (!profile) return;
-  
-    setLoading(true);
-    setGrades(null);
-  
-    try {
-      const response = await fetch('/api/checkgrade', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ lineUserId: profile.userId }),
-      });
-  
-      const data = await response.json();
-      if (data.success) {
-        setGrades(data.grades);
-      } else {
-        setGrades({ error: data.error || 'Grade check failed or user not registered' });
-      }
-    } catch (error) {
-      setGrades({ error: 'An error occurred while checking grades' });
-    } finally {
-      setLoading(false);
-    }
+    const lineUserId = profile.userId;
+    checkGrade(lineUserId); // Use context method
   };
-  
+
   return profile ? (
     <div className={styles.loginContainer}>
       <div className={styles.profileCard}>
