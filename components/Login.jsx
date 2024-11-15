@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useSession } from 'next-auth/react';
+import { useSession } from 'next-auth/react'; // Using NextAuth session only
 import { FaUserCircle, FaSignOutAlt, FaRegRegistered, FaCheckCircle } from 'react-icons/fa';
 import styles from './Login.module.css';
 
@@ -22,12 +22,25 @@ export default function Login() {
         displayName: session.user.name,
         pictureUrl: session.user.image,
       });
+    } else {
+      // If not logged in, trigger LIFF login
+      const fetchProfile = async () => {
+        const res = await fetch('/api/auth/session'); // Call to session API to retrieve the profile
+        const profileData = await res.json();
+        if (profileData?.user?.id) {
+          setProfile(profileData.user);
+        } else {
+          alert('Unable to retrieve profile. Please log in again.');
+        }
+      };
+      fetchProfile();
     }
-  }, [status, session, router]);
+  }, [status, session]);
 
-  const handleLogout = () => {
-    // Use NextAuth's logout function
-    router.push('/api/auth/signout');
+  const handleLogout = async () => {
+    // Trigger sign-out using LIFF through NextAuth signOut method
+    await fetch('/api/auth/signout', { method: 'POST' });
+    window.location.reload();
   };
 
   const navigateToRegister = () => {
