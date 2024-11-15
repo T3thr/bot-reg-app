@@ -40,7 +40,6 @@ export default function Login() {
   const handleLogout = () => {
     liff.logout();
     localStorage.removeItem('lineUserId');
-    router.push('https://liff.line.me/2006561325-nAPmNdbv'); // Redirect to login page after logout
   };
 
   const navigateToRegister = () => {

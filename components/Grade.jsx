@@ -1,17 +1,17 @@
 'use client';
 
-import { useSession } from 'next-auth/react';
+import { useSession } from 'next-auth/react'; // Use session from NextAuth
 import { useState, useEffect } from 'react';
 import styles from './Grade.module.css';
 
 export default function Grade() {
-  const { data: session, status } = useSession(); // Use session info from NextAuth
+  const { data: session, status } = useSession(); // Get session info from NextAuth
   const [grades, setGrades] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    // Wait for session loading
+    // Wait for session to load
     if (status === 'loading') return;
 
     if (!session || !session.user?.id) {
@@ -22,7 +22,10 @@ export default function Grade() {
 
     const fetchGrades = async () => {
       try {
-        const response = await fetch(`/api/checkgrade`);
+        // Fetch grades using the LINE User ID from the session
+        const response = await fetch(`/api/checkgrade?lineUserId=${session.user.id}`, {
+          method: 'GET',
+        });
         const data = await response.json();
         if (data.success) {
           setGrades(data.grades);
