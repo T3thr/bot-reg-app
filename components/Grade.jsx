@@ -3,8 +3,8 @@ import { options } from '@/app/api/auth/[...nextauth]/options'; // Import sessio
 import { redirect } from 'next/navigation'; // For redirecting to login if no session
 import styles from './Grade.module.css';
 
-export default async function GradePage() {
-  const session = await getServerSession(authOptions); // Get server-side session
+export default async function Grade() {
+    const session = await getServerSession(options)
 
   if (!session || !session.user?.id) {
     // Redirect to login if no session exists
