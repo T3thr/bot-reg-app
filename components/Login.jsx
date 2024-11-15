@@ -1,6 +1,6 @@
 'use client';
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter  } from 'next/navigation';
 import liff from '@line/liff';
 import { FaUserCircle, FaSignOutAlt, FaRegRegistered, FaCheckCircle } from 'react-icons/fa';
 import styles from './Login.module.css';
@@ -11,23 +11,17 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
+
   useEffect(() => {
-    // Initialize LIFF with your app's liffId
+
     liff.init({ liffId: process.env.NEXT_PUBLIC_LIFF_ID }).then(async () => {
       if (liff.isLoggedIn()) {
         const profileData = await liff.getProfile();
         setProfile(profileData);
         localStorage.setItem('lineUserId', profileData.userId); // Save user ID in localStorage
       } else {
-        // Trigger the login and make sure the user will be prompted to add the OA friend
-        liff.login({
-          botPrompt: 'aggressive',  // Prompt to add the bot as a friend automatically
-          scope: 'profile openid email', // Request the necessary scopes
-          redirectUri: window.location.href, // Redirect back to the current page after login
-        });
+        liff.login(); // If not logged in, trigger the LINE login
       }
-    }).catch((error) => {
-      console.error('LIFF Initialization failed', error);
     });
   }, []);
 
@@ -43,17 +37,17 @@ export default function Login() {
 
   const handleCheckGrade = async () => {
     if (!profile) return;
-
+  
     setLoading(true);
     setGrades(null);
-
+  
     try {
       const response = await fetch('/api/checkgrade', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ lineUserId: profile.userId }),
       });
-
+  
       const data = await response.json();
       if (data.success) {
         setGrades(data.grades);
@@ -66,7 +60,7 @@ export default function Login() {
       setLoading(false);
     }
   };
-
+  
   return profile ? (
     <div className={styles.loginContainer}>
       <div className={styles.profileCard}>
