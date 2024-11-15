@@ -1,6 +1,7 @@
 // pages/api/checkgrade.js
 import puppeteer from 'puppeteer';
-import User from '../../models/User'; // Import your MongoDB User model
+import User from '@/backend/models/User'; // Import your MongoDB User model
+import mongodbConnect from '@/backend/lib/mongodb'; // Import mongodbConnect
 
 export default async function handler(req, res) {
   const { lineUserId } = req.query; // Get lineUserId from the query parameter
@@ -10,13 +11,16 @@ export default async function handler(req, res) {
   }
 
   try {
-    // 1. Find the user credentials by lineUserId
+    // 1. Connect to the MongoDB database
+    await mongodbConnect();
+
+    // 2. Find the user credentials by lineUserId
     const user = await User.findOne({ lineUserId });
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
     }
 
-    // 2. Launch Puppeteer and login to the grade portal using credentials
+    // 3. Launch Puppeteer and login to the grade portal using credentials
     const browser = await puppeteer.launch({ headless: true });
     const page = await browser.newPage();
 
@@ -31,7 +35,7 @@ export default async function handler(req, res) {
     // Wait for navigation to the grade page
     await page.waitForNavigation();
 
-    // 3. Scrape the grade page
+    // 4. Scrape the grade page
     await page.goto('https://reg9.nu.ac.th/registrar/grade.asp?avs224389636=41');
     await page.waitForSelector('table'); // Wait for tables to load
 
@@ -66,10 +70,10 @@ export default async function handler(req, res) {
 
     await browser.close();
 
-    // 4. Analyze grades for leaks and send notifications
+    // 5. Analyze grades for leaks and send notifications
     const analysis = analyzeGrades(gradeData);
     
-    // 5. Return the analyzed data
+    // 6. Return the analyzed data
     res.status(200).json({ success: true, grades: gradeData, analysis });
 
   } catch (error) {
