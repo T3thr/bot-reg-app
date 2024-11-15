@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import styles from './Grade.module.css';
+import liff from '@line/liff';
 
 export default function Grade() {
   const [grades, setGrades] = useState(null);
