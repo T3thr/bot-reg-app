@@ -1,9 +1,9 @@
+// components/Grade.jsx
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter } from 'next/router';
 import styles from './Grade.module.css';
-import liff from '@line/liff';
 
 export default function Grade() {
   const [grades, setGrades] = useState(null);
@@ -13,25 +13,20 @@ export default function Grade() {
   const router = useRouter();
 
   useEffect(() => {
-    // Initialize LIFF
-    if (window.LIFF) {
-      window.LIFF.init({ liffId: process.env.NEXT_PUBLIC_LIFF_ID }) // Replace with your actual LIFF ID
-        .then(() => {
-          if (window.LIFF.isLoggedIn()) {
-            // Get user profile after login
-            window.LIFF.getProfile().then((profile) => {
-              setLineUserId(profile.userId); // Save the user ID
-              fetchGrades(profile.userId);  // Fetch grades after getting user profile
-            }).catch(err => {
-              setError('Error fetching user profile');
-            });
-          } else {
-            window.LIFF.login();
-          }
-        })
-        .catch((err) => {
-          setError('Error initializing LIFF');
-        });
+    // Fetch lineUserId from URL or localStorage
+    const userIdFromUrl = new URLSearchParams(window.location.search).get('lineUserId');
+    if (userIdFromUrl) {
+      setLineUserId(userIdFromUrl);
+      fetchGrades(userIdFromUrl);  // Fetch grades after getting user ID
+    } else {
+      const userIdFromStorage = localStorage.getItem('lineUserId');
+      if (userIdFromStorage) {
+        setLineUserId(userIdFromStorage);
+        fetchGrades(userIdFromStorage);  // Fetch grades after getting user ID
+      } else {
+        setError('No LINE User ID found.');
+        setLoading(false);
+      }
     }
   }, []);
 
