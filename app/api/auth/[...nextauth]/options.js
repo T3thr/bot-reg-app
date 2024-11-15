@@ -4,7 +4,7 @@ import mongodbConnect from '@/backend/lib/mongodb';
 import User from '@/backend/models/User';
 import liff from '@line/liff';
 
-export const authOptions = {
+export const options = {
   providers: [
     CredentialsProvider({
       id: 'line',
@@ -91,4 +91,4 @@ export const authOptions = {
   },
 };
 
-export default NextAuth(authOptions);
+export default options;
