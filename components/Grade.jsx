@@ -15,7 +15,7 @@ export default function Grade() {
   useEffect(() => {
     // Initialize LIFF
     if (window.LIFF) {
-      window.LIFF.init({ liffId: 'YOUR_LIFF_ID' }) // Replace with your actual LIFF ID
+      window.LIFF.init({ liffId: process.env.NEXT_PUBLIC_LIFF_ID }) // Replace with your actual LIFF ID
         .then(() => {
           if (window.LIFF.isLoggedIn()) {
             // Get user profile after login
