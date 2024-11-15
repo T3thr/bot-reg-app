@@ -1,0 +1,111 @@
+/* Overall container for the grades */
+.gradesContainer {
+    background-color: #f4f5f7;
+    color: #333;
+    border-radius: 8px;
+    padding: 30px;
+    width: 80%;
+    max-width: 900px;
+    margin: 50px auto;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    font-family: 'Arial', sans-serif;
+    text-align: center;
+  }
+  
+  /* Main title */
+  .gradesContainer h1 {
+    font-size: 2.5rem;
+    font-weight: 600;
+    color: #2e3d49;
+    margin-bottom: 20px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  
+  /* Error messages */
+  .error {
+    color: #e74c3c;
+    font-size: 1.1rem;
+    font-weight: 500;
+    margin-top: 20px;
+  }
+  
+  /* Loading state */
+  .loading {
+    font-size: 1.1rem;
+    font-weight: 500;
+    color: #7f8c8d;
+    margin-top: 20px;
+  }
+  
+  /* Grades section container */
+  .gradesContainer pre {
+    background-color: #fff;
+    color: #2c3e50;
+    font-family: 'Courier New', Courier, monospace;
+    border: 1px solid #ccc;
+    padding: 20px;
+    border-radius: 6px;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    margin-top: 20px;
+    font-size: 1rem;
+    line-height: 1.5;
+  }
+  
+  /* Styling for loading and error state inside */
+  .gradesContainer p {
+    font-size: 1.2rem;
+    color: #333;
+    font-weight: 400;
+  }
+  
+  /* Button for any interaction if you add one (e.g., retry) */
+  .retryButton {
+    background-color: #3498db;
+    color: #fff;
+    padding: 12px 25px;
+    border-radius: 5px;
+    border: none;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.3s ease;
+  }
+  
+  .retryButton:hover {
+    background-color: #2980b9;
+    transform: scale(1.05);
+  }
+  
+  /* Define a smooth hover for any clickable content like grades */
+  .gradesContainer pre:hover {
+    background-color: #f9fafb;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  
+  /* Footer style (if you decide to add a footer with copyright or additional links) */
+  .footer {
+    margin-top: 30px;
+    font-size: 0.9rem;
+    color: #7f8c8d;
+    font-weight: 400;
+    text-align: center;
+  }
+  
+  /* Responsive design tweaks */
+  @media (max-width: 768px) {
+    .gradesContainer {
+      padding: 20px;
+      width: 90%;
+    }
+  
+    .gradesContainer h1 {
+      font-size: 2rem;
+    }
+  
+    .gradesContainer pre {
+      font-size: 0.9rem;
+    }
+  }
+  
