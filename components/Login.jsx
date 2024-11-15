@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import liff from '@line/liff';
 import { FaUserCircle, FaSignOutAlt, FaRegRegistered, FaCheckCircle } from 'react-icons/fa';
-import { useGrade } from './context/GradeContext';
+import { useGrade } from '@/context/GradeContext';
 import styles from './Login.module.css';
 
 export default function Login() {
