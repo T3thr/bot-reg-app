@@ -1,15 +1,10 @@
 import { getServerSession } from 'next-auth/next'
 import { options } from '@/app/api/auth/[...nextauth]/options'; // Import session handling options
-import { redirect } from 'next/navigation'; // For redirecting to login if no session
+
 import styles from './Grade.module.css';
 
 export default async function Grade() {
     const session = await getServerSession(options)
-
-  if (!session || !session.user?.id) {
-    // Redirect to login if no session exists
-    redirect('/');
-  }
 
   // Fetch grades using the session's lineUserId
   const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/checkgrade?lineUserId=${session.user.id}`);
