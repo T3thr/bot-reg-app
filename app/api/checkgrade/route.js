@@ -28,7 +28,7 @@ const scrapeGrades = async (username, password) => {
         totalSubjects: 0,
         gradedSubjects: 0,
         eValSubjects: 0,
-        subjects: []
+        subjects: [],
       };
 
       const rows = table.querySelectorAll('tr[valign="TOP"][bgcolor="#F6F6FF"]');
@@ -91,20 +91,20 @@ export default async function handler(req, res) {
   if (req.method === 'POST') {
     const { lineUserId } = req.body;
 
+    if (!lineUserId) {
+      return res.status(400).json({ success: false, error: 'LINE User ID is required.' });
+    }
+
     const user = await User.findOne({ lineUserId }).lean();
     if (!user) return res.status(404).json({ success: false, error: 'User not found' });
 
     try {
-      // Step 1: Scrape new grades
       const newGrades = await scrapeGrades(user.username, user.password);
-
-      // Step 2: Retrieve the old state and compare
       const oldState = await GradeState.findOne({ lineUserId });
       const oldGrades = oldState?.grades || {};
 
       const { message, gradeChanged } = generateNotificationMessage(newGrades, oldGrades);
 
-      // Step 3: Save new state if there are changes
       if (gradeChanged || !oldState) {
         await GradeState.updateOne(
           { lineUserId },
@@ -113,17 +113,34 @@ export default async function handler(req, res) {
         );
       }
 
-      // Step 4: Send response
       const finalMessage = gradeChanged
         ? `Grade has changed!\n\n${message}`
         : message || 'No new grade changes detected.';
 
-      res.status(200).json({ success: true, notification: finalMessage });
+      return res.status(200).json({ success: true, notification: finalMessage });
     } catch (error) {
       console.error('Grade scraping error:', error);
-      res.status(500).json({ success: false, error: 'Failed to scrape grades.' });
+      return res.status(500).json({ success: false, error: 'Failed to scrape grades.' });
+    }
+  } else if (req.method === 'GET') {
+    const { lineUserId } = req.query;
+
+    if (!lineUserId) {
+      return res.status(400).json({ success: false, error: 'LINE User ID is required.' });
+    }
+
+    try {
+      const gradeState = await GradeState.findOne({ lineUserId }).lean();
+      if (!gradeState) {
+        return res.status(404).json({ success: false, error: 'No grades found for this user.' });
+      }
+
+      return res.status(200).json({ success: true, grades: gradeState.grades });
+    } catch (error) {
+      console.error('Error retrieving grades:', error);
+      return res.status(500).json({ success: false, error: 'Failed to retrieve grades.' });
     }
   } else {
-    res.status(405).json({ success: false, error: 'Method not allowed' });
+    return res.status(405).json({ success: false, error: 'Method not allowed' });
   }
 }

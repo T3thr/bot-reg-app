@@ -20,25 +20,24 @@ export default function Grade() {
     }
 
     const fetchGrades = async () => {
-      try {
-        const response = await fetch('/api/checkgrade', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ lineUserId }),
-        });
-
-        const data = await response.json();
-        if (data.success) {
-          setGrades(data.notification);
-        } else {
-          setError(data.error || 'Failed to fetch grades.');
+        try {
+          const response = await fetch(`/api/checkgrade?lineUserId=${lineUserId}`, {
+            method: 'GET',
+          });
+      
+          const data = await response.json();
+          if (data.success) {
+            setGrades(data.grades);
+          } else {
+            setError(data.error || 'Failed to fetch grades.');
+          }
+        } catch (err) {
+          setError('An error occurred while fetching grades.');
+        } finally {
+          setLoading(false);
         }
-      } catch (err) {
-        setError('An error occurred while fetching grades.');
-      } finally {
-        setLoading(false);
-      }
-    };
+      };
+      
 
     fetchGrades();
   }, [lineUserId]);
