@@ -1,14 +1,14 @@
 'use client';
+
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import liff from '@line/liff';
 import { FaUserCircle, FaSignOutAlt, FaRegRegistered, FaCheckCircle } from 'react-icons/fa';
-import { useGrade } from '@/context/GradeContext';
 import styles from './Login.module.css';
 
 export default function Login() {
   const [profile, setProfile] = useState(null);
-  const { grades, loading, checkGrade } = useGrade();
+  const [loading, setLoading] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -33,10 +33,13 @@ export default function Login() {
     router.push(`/signup`);
   };
 
-  const handleCheckGrade = () => {
-    if (!profile) return;
-    const lineUserId = profile.userId;
-    checkGrade(lineUserId); // Use context method
+  const navigateToCheckGrade = () => {
+    const lineUserId = profile?.userId || localStorage.getItem('lineUserId');
+    if (lineUserId) {
+      router.push(`/grades?lineUserId=${lineUserId}`);
+    } else {
+      alert('Unable to retrieve LINE User ID. Please login again.');
+    }
   };
 
   return profile ? (
@@ -58,21 +61,12 @@ export default function Login() {
           </button>
           <button
             className={`${styles.btn} ${styles.btnCheckGrade}`}
-            onClick={handleCheckGrade}
+            onClick={navigateToCheckGrade}
             disabled={loading}
           >
-            {loading ? 'Checking...' : <><FaCheckCircle className={styles.icon} /> Check Grade</>}
+            {loading ? 'Loading...' : <><FaCheckCircle className={styles.icon} /> Check Grade</>}
           </button>
         </div>
-        {grades && (
-          <div className={styles.gradesResult}>
-            {grades.error ? (
-              <p className={styles.error}>{grades.error}</p>
-            ) : (
-              <pre>{JSON.stringify(grades, null, 2)}</pre>
-            )}
-          </div>
-        )}
       </div>
     </div>
   ) : (
