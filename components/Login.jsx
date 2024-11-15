@@ -23,23 +23,13 @@ export default function Login() {
         displayName: session.user.name,
         pictureUrl: session.user.image,
       });
-    } else {
-      // If not logged in, trigger LIFF login
-      liff.init({ liffId: process.env.NEXT_PUBLIC_LIFF_ID }).then(async () => {
-        if (liff.isLoggedIn()) {
-          const profileData = await liff.getProfile();
-          setProfile(profileData);
-          localStorage.setItem('lineUserId', profileData.userId); // Save user ID
-        } else {
-          liff.login(); // Trigger login if not logged in
-        }
-      });
-    }
+    } 
   }, [status, session, router]);
 
   const handleLogout = () => {
     liff.logout();
     localStorage.removeItem('lineUserId');
+    router.push('https://liff.line.me/2006561325-nAPmNdbv'); // Redirect to login page after logout
   };
 
   const navigateToRegister = () => {
