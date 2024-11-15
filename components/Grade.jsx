@@ -22,7 +22,7 @@ export default function Grade() {
 
     const fetchGrades = async () => {
       try {
-        const response = await fetch(`/api/checkgrade?lineUserId=${session.user.id}`);
+        const response = await fetch(`/api/checkgrade`);
         const data = await response.json();
         if (data.success) {
           setGrades(data.grades);
