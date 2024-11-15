@@ -4,7 +4,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useGrade } from '@/context/GradeContext'; // Import the custom hook from context
-import { useUserByLineUserId } from '@/actions/GradeAction'; // Import the new hook from GradeAction.js
+import { useUserByLineUserId } from '@/lib/gradeAction'; // Import the new hook from GradeAction.js
 import styles from './Grade.module.css';
 
 export default function Grade() {
