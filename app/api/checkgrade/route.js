@@ -57,119 +57,37 @@ const scrapeGrades = async (username, password) => {
   return grades;
 };
 
-const generateNotificationMessage = (newGrades, oldGrades) => {
-  let message = '';
-  let gradeChanged = false;
-  const evalNotifications = [];
-
-  for (const [semester, { totalSubjects, gradedSubjects, eValSubjects }] of Object.entries(newGrades)) {
-    const oldSemester = oldGrades?.[semester] || {};
-    const oldGradedSubjects = oldSemester.gradedSubjects || 0;
-
-    // Check if the number of graded subjects has changed
-    if (gradedSubjects !== oldGradedSubjects) {
-      gradeChanged = true;
-      message += `${semester} has ${gradedSubjects} out of ${totalSubjects} subjects with grades.\n`;
-    }
-
-    // Add special notification if there are e-val subjects
-    if (eValSubjects > 0) {
-      evalNotifications.push(`in ${semester} you got ${eValSubjects} e-val subjects requiring evaluation.`);
-    }
-  }
-
-  // Include e-val notifications
-  if (evalNotifications.length) {
-    message += '\n' + evalNotifications.join('\n');
-  }
-
-  return { message, gradeChanged };
-};
-
-const replyToLineUser = async (replyToken, message) => {
-  const LINE_API_URL = 'https://api.line.me/v2/bot/message/reply';
-  const headers = {
-    'Content-Type': 'application/json',
-    'Authorization': `Bearer ${process.env.LINE_CHANNEL_ACCESS_TOKEN}`,
-  };
-
-  const body = {
-    replyToken: replyToken,
-    messages: [
-      {
-        type: 'text',
-        text: message,
-      },
-    ],
-  };
-
-  try {
-    await axios.post(LINE_API_URL, body, { headers });
-  } catch (error) {
-    console.error('Error sending message to LINE:', error);
-  }
-};
-
 export default async function handler(req, res) {
   await mongodbConnect();
 
-  if (req.method === 'POST') {
-    const { events } = req.body;
+  if (req.method === 'GET') {
+    const { lineUserId } = req.query;
 
-    if (!events || events.length === 0) {
-      return res.status(400).json({ success: false, error: 'No events found.' });
+    if (!lineUserId) {
+      return res.status(400).json({ success: false, error: 'No lineUserId provided' });
     }
 
-    const event = events[0]; // Handle the first event
-    const { replyToken, message } = event;
-
-    if (!message || !message.text) {
-      return res.status(400).json({ success: false, error: 'No message text found.' });
+    const user = await User.findOne({ lineUserId }).lean();
+    if (!user) {
+      return res.status(404).json({ success: false, error: 'User not found' });
     }
 
-    const userMessage = message.text.trim().toLowerCase();
+    try {
+      const grades = await scrapeGrades(user.username, user.password);
+      
+      // Store or update grade state in MongoDB
+      await GradeState.updateOne(
+        { lineUserId },
+        { grades, lastChecked: new Date() },
+        { upsert: true }
+      );
 
-    // Command to check grades
-    if (userMessage === 'check grades') {
-      const lineUserId = event.source.userId;
-      const user = await User.findOne({ lineUserId }).lean();
-      if (!user) {
-        await replyToLineUser(replyToken, 'User not found. Please register first.');
-        return res.status(404).json({ success: false, error: 'User not found' });
-      }
-
-      try {
-        const newGrades = await scrapeGrades(user.username, user.password);
-        const oldState = await GradeState.findOne({ lineUserId });
-        const oldGrades = oldState?.grades || {};
-
-        const { message, gradeChanged } = generateNotificationMessage(newGrades, oldGrades);
-
-        if (gradeChanged || !oldState) {
-          await GradeState.updateOne(
-            { lineUserId },
-            { grades: newGrades, lastChecked: new Date() },
-            { upsert: true }
-          );
-        }
-
-        const finalMessage = gradeChanged
-          ? `Grade has changed!\n\n${message}`
-          : message || 'No new grade changes detected.';
-
-        await replyToLineUser(replyToken, finalMessage);
-        return res.status(200).json({ success: true, notification: finalMessage });
-      } catch (error) {
-        console.error('Grade scraping error:', error);
-        await replyToLineUser(replyToken, 'Failed to scrape grades.');
-        return res.status(500).json({ success: false, error: 'Failed to scrape grades.' });
-      }
+      return res.status(200).json({ success: true, grades });
+    } catch (error) {
+      console.error('Error scraping grades:', error);
+      return res.status(500).json({ success: false, error: 'Failed to scrape grades' });
     }
-
-    // Handle other commands (e.g., "help")
-    await replyToLineUser(replyToken, 'Unknown command. Please type "check grades" to check your grades.');
-    return res.status(200).json({ success: true, message: 'Unknown command.' });
-  } else {
-    return res.status(405).json({ success: false, error: 'Method not allowed' });
   }
+
+  return res.status(405).json({ success: false, error: 'Method not allowed' });
 }
