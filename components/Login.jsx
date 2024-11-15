@@ -12,16 +12,32 @@ export default function Login() {
   const router = useRouter();
 
   useEffect(() => {
+    // Initialize LIFF app
     liff.init({ liffId: process.env.NEXT_PUBLIC_LIFF_ID }).then(async () => {
       if (liff.isLoggedIn()) {
+        // If the user is already logged in
         const profileData = await liff.getProfile();
         setProfile(profileData);
         localStorage.setItem('lineUserId', profileData.userId); // Save user ID in localStorage
       } else {
-        liff.login(); // If not logged in, trigger the LINE login
+        // If not logged in, trigger the LINE login
+        liff.login();
       }
     });
   }, []);
+
+  useEffect(() => {
+    if (liff.isLoggedIn() && profile === null) {
+      // Once the user logs in, fetch their profile
+      liff.getProfile().then((profileData) => {
+        setProfile(profileData);
+        localStorage.setItem('lineUserId', profileData.userId);
+
+        // Redirect the user to the LINE OA "Add Friend" page immediately after login
+        redirectToLineOA();
+      });
+    }
+  }, [profile]);
 
   const handleLogout = () => {
     liff.logout();
@@ -60,11 +76,13 @@ export default function Login() {
   };
 
   const redirectToLineOA = () => {
-    // Redirect to the Line OA "Add Friend" page
-    liff.openWindow({
-      url: `https://line.me/R/ti/p/@721pveeo`,  // Replace '@yourLineOAId' with your LINE OA ID
-      external: true,  // This opens the link in the external browser if needed
-    });
+    // Automatically redirect to the Line OA "Add Friend" page
+    if (liff.isLoggedIn()) {
+      liff.openWindow({
+        url: 'https://lin.ee/H0GtBKF',  // Replace with your actual LINE OA URL
+        external: true,  // Opens in the external browser
+      });
+    }
   };
 
   return profile ? (
