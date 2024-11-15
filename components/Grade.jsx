@@ -1,57 +1,56 @@
-import { options } from '@/app/api/auth/[...nextauth]/options';
-import { getServerSession } from 'next-auth';
-import mongodbConnect from '@/backend/lib/mongodb';
-import GradeState from '@/backend/models/GradeState';
+'use client';
+
+import { useSession } from 'next-auth/react';
+import { useState, useEffect } from 'react';
 import styles from './Grade.module.css';
 
-export default async function Grade({ searchParams }) {
-  const { lineUserId } = searchParams || {};
+export default function Grade() {
+  const { data: session, status } = useSession(); // Get session info from NextAuth
+  const [grades, setGrades] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  if (!lineUserId) {
-    return (
-      <div className={styles.error}>
-        <p>No LINE User ID provided.</p>
-      </div>
-    );
-  }
+  useEffect(() => {
+    // Wait until session is fully loaded
+    if (status === 'loading') return;
 
-  try {
-    // Establish MongoDB connection
-    await mongodbConnect();
-
-    // Validate session for LINE user
-    const session = await getServerSession(options);
-    if (!session || session.user.id !== lineUserId) {
-      return (
-        <div className={styles.error}>
-          <p>Unauthorized or invalid LINE User session.</p>
-        </div>
-      );
+    if (!session || !session.user?.id) {
+      setError('You need to be logged in to view grades.');
+      setLoading(false);
+      return;
     }
 
-    // Fetch grades from MongoDB
-    const gradeData = await GradeState.findOne({ lineUserId }).lean();
-    if (!gradeData) {
-      return (
-        <div className={styles.error}>
-          <p>No grade data available for this user.</p>
-        </div>
-      );
-    }
+    const fetchGrades = async () => {
+      try {
+        // Fetch grades using the LINE User ID from the session
+        const response = await fetch(`/api/checkgrade?lineUserId=${session.user.id}`, {
+          method: 'GET',
+        });
 
-    // Render grades
-    return (
-      <div className={styles.gradesContainer}>
-        <h1>Grade Results</h1>
-        <pre>{JSON.stringify(gradeData.grades, null, 2)}</pre>
-      </div>
-    );
-  } catch (error) {
-    console.error('Error fetching grades:', error);
-    return (
-      <div className={styles.error}>
-        <p>An error occurred while fetching grades.</p>
-      </div>
-    );
-  }
+        const data = await response.json();
+        if (data.success) {
+          setGrades(data.grades);
+        } else {
+          setError(data.error || 'Failed to fetch grades.');
+        }
+      } catch (err) {
+        setError('An error occurred while fetching grades.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchGrades();
+  }, [session, status]);
+
+  if (loading) return <p>Loading grades...</p>;
+
+  if (error) return <p className={styles.error}>{error}</p>;
+
+  return (
+    <div className={styles.gradesContainer}>
+      <h1>Grade Results</h1>
+      <pre>{JSON.stringify(grades, null, 2)}</pre>
+    </div>
+  );
 }

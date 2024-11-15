@@ -2,7 +2,7 @@ import NextAuth from 'next-auth';
 import mongodbConnect from '@/backend/lib/mongodb';
 import User from '@/backend/models/User';
 
-export const authOptions = {
+export const options = {
   providers: [
     Providers.Credentials({
       // LINE OAuth Provider
