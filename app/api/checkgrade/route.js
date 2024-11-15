@@ -2,6 +2,7 @@ import puppeteer from 'puppeteer';
 import mongodbConnect from '@/backend/lib/mongodb';
 import User from '@/backend/models/User';
 import GradeState from '@/backend/models/GradeState';
+import axios from 'axios';
 
 const scrapeGrades = async (username, password) => {
   const browser = await puppeteer.launch();
@@ -85,43 +86,89 @@ const generateNotificationMessage = (newGrades, oldGrades) => {
   return { message, gradeChanged };
 };
 
+const replyToLineUser = async (replyToken, message) => {
+  const LINE_API_URL = 'https://api.line.me/v2/bot/message/reply';
+  const headers = {
+    'Content-Type': 'application/json',
+    'Authorization': `Bearer ${process.env.LINE_CHANNEL_ACCESS_TOKEN}`,
+  };
+
+  const body = {
+    replyToken: replyToken,
+    messages: [
+      {
+        type: 'text',
+        text: message,
+      },
+    ],
+  };
+
+  try {
+    await axios.post(LINE_API_URL, body, { headers });
+  } catch (error) {
+    console.error('Error sending message to LINE:', error);
+  }
+};
+
 export default async function handler(req, res) {
   await mongodbConnect();
 
-  if (req.method === 'GET') {
-    const { lineUserId } = req.query;
+  if (req.method === 'POST') {
+    const { events } = req.body;
 
-    if (!lineUserId) {
-      return res.status(400).json({ success: false, error: 'LINE User ID is required.' });
+    if (!events || events.length === 0) {
+      return res.status(400).json({ success: false, error: 'No events found.' });
     }
 
-    const user = await User.findOne({ lineUserId }).lean();
-    if (!user) return res.status(404).json({ success: false, error: 'User not found' });
+    const event = events[0]; // Handle the first event
+    const { replyToken, message } = event;
 
-    try {
-      const newGrades = await scrapeGrades(user.username, user.password);
-      const oldState = await GradeState.findOne({ lineUserId });
-      const oldGrades = oldState?.grades || {};
+    if (!message || !message.text) {
+      return res.status(400).json({ success: false, error: 'No message text found.' });
+    }
 
-      const { message, gradeChanged } = generateNotificationMessage(newGrades, oldGrades);
+    const userMessage = message.text.trim().toLowerCase();
 
-      if (gradeChanged || !oldState) {
-        await GradeState.updateOne(
-          { lineUserId },
-          { grades: newGrades, lastChecked: new Date() },
-          { upsert: true }
-        );
+    // Command to check grades
+    if (userMessage === 'check grades') {
+      const lineUserId = event.source.userId;
+      const user = await User.findOne({ lineUserId }).lean();
+      if (!user) {
+        await replyToLineUser(replyToken, 'User not found. Please register first.');
+        return res.status(404).json({ success: false, error: 'User not found' });
       }
 
-      const finalMessage = gradeChanged
-        ? `Grade has changed!\n\n${message}`
-        : message || 'No new grade changes detected.';
+      try {
+        const newGrades = await scrapeGrades(user.username, user.password);
+        const oldState = await GradeState.findOne({ lineUserId });
+        const oldGrades = oldState?.grades || {};
 
-      return res.status(200).json({ success: true, notification: finalMessage, grades: newGrades });
-    } catch (error) {
-      console.error('Grade scraping error:', error);
-      return res.status(500).json({ success: false, error: 'Failed to scrape grades.' });
+        const { message, gradeChanged } = generateNotificationMessage(newGrades, oldGrades);
+
+        if (gradeChanged || !oldState) {
+          await GradeState.updateOne(
+            { lineUserId },
+            { grades: newGrades, lastChecked: new Date() },
+            { upsert: true }
+          );
+        }
+
+        const finalMessage = gradeChanged
+          ? `Grade has changed!\n\n${message}`
+          : message || 'No new grade changes detected.';
+
+        await replyToLineUser(replyToken, finalMessage);
+        return res.status(200).json({ success: true, notification: finalMessage });
+      } catch (error) {
+        console.error('Grade scraping error:', error);
+        await replyToLineUser(replyToken, 'Failed to scrape grades.');
+        return res.status(500).json({ success: false, error: 'Failed to scrape grades.' });
+      }
     }
+
+    // Handle other commands (e.g., "help")
+    await replyToLineUser(replyToken, 'Unknown command. Please type "check grades" to check your grades.');
+    return res.status(200).json({ success: true, message: 'Unknown command.' });
   } else {
     return res.status(405).json({ success: false, error: 'Method not allowed' });
   }
