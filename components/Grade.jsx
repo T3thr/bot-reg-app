@@ -3,25 +3,23 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useGrade } from '@/context/GradeContext';  // Import the context hook
+import { useGrade } from '@/context/GradeContext'; // Import the custom hook from context
 import styles from './Grade.module.css';
 
 export default function Grade() {
   const [lineUserId, setLineUserId] = useState(null);
-  const { grades, analysis, loading, error, fetchGrades } = useGrade();  // Use context values and fetchGrades function
-
-  const router = useRouter();
+  const { grades, loading, error, analysis, fetchGrades } = useGrade(); // Access context values
 
   useEffect(() => {
     const userIdFromUrl = new URLSearchParams(window.location.search).get('lineUserId');
     if (userIdFromUrl) {
       setLineUserId(userIdFromUrl);
-      fetchGrades(userIdFromUrl);  // Fetch grades using context function
+      fetchGrades(userIdFromUrl); // Fetch grades using context function
     } else {
       const userIdFromStorage = localStorage.getItem('lineUserId');
       if (userIdFromStorage) {
         setLineUserId(userIdFromStorage);
-        fetchGrades(userIdFromStorage);  // Fetch grades using context function
+        fetchGrades(userIdFromStorage); // Fetch grades using context function
       } else {
         setError('No LINE User ID found.');
       }

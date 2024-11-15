@@ -14,9 +14,9 @@ export function GlobalProvider({ children }) {
     <SessionProvider>
     <ToastContainer position="bottom-right" />
         <AuthProvider>
-
+            <GradeProvider>
             {children}
-
+            </GradeProvider>
         </AuthProvider>
     </SessionProvider>
 
