@@ -1,29 +1,30 @@
 'use client';
 
+import { useSession } from 'next-auth/react';
 import { useState, useEffect } from 'react';
-import { useSession, signIn } from 'next-auth/react';
 import styles from './Grade.module.css';
 
 export default function Grade() {
-  const { data: session, status } = useSession(); // Access session data via NextAuth
+  const { data: session, status } = useSession(); // Get session info from NextAuth
   const [grades, setGrades] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    const fetchGrades = async () => {
-      if (status === 'loading') return; // Wait for session to load
-      if (!session?.user?.id) {
-        setError('You are not logged in. Please log in via LINE.');
-        setLoading(false);
-        return;
-      }
+    // Wait until session is fully loaded
+    if (status === 'loading') return;
 
+    if (!session || !session.user?.id) {
+      setError('You need to be logged in to view grades.');
+      setLoading(false);
+      return;
+    }
+
+    const fetchGrades = async () => {
       try {
-        const response = await fetch(`/api/checkgrade`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ lineUserId: session.user.id }),
+        // Fetch grades using the LINE User ID from the session
+        const response = await fetch(`/api/checkgrade?lineUserId=${session.user.id}`, {
+          method: 'GET',
         });
 
         const data = await response.json();
@@ -42,18 +43,9 @@ export default function Grade() {
     fetchGrades();
   }, [session, status]);
 
-  if (loading || status === 'loading') return <p>Loading grades...</p>;
+  if (loading) return <p>Loading grades...</p>;
 
-  if (error) {
-    return (
-      <div className={styles.error}>
-        <p>{error}</p>
-        {status !== 'authenticated' && (
-          <button onClick={() => signIn('line')}>Login with LINE</button>
-        )}
-      </div>
-    );
-  }
+  if (error) return <p className={styles.error}>{error}</p>;
 
   return (
     <div className={styles.gradesContainer}>
