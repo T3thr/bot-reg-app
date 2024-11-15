@@ -12,29 +12,33 @@ export default function Login() {
   const router = useRouter();
 
   useEffect(() => {
-    // Initialize LIFF app
     liff.init({ liffId: process.env.NEXT_PUBLIC_LIFF_ID }).then(async () => {
       if (liff.isLoggedIn()) {
-        // If the user is already logged in
         const profileData = await liff.getProfile();
         setProfile(profileData);
         localStorage.setItem('lineUserId', profileData.userId); // Save user ID in localStorage
       } else {
-        // If not logged in, trigger the LINE login
-        liff.login();
+        // Trigger the login and ensure the user adds LINE OA as a friend
+        liff.login({
+          redirectUri: window.location.href, // This redirects after login
+          scope: 'profile openid',  // Make sure you are requesting the correct scopes
+        });
       }
+    }).catch((error) => {
+      console.error('LIFF Initialization failed', error);
     });
   }, []);
 
   useEffect(() => {
-    if (liff.isLoggedIn() && profile === null) {
-      // Once the user logs in, fetch their profile
-      liff.getProfile().then((profileData) => {
-        setProfile(profileData);
-        localStorage.setItem('lineUserId', profileData.userId);
-
-        // Redirect the user to the LINE OA "Add Friend" page immediately after login
-        redirectToLineOA();
+    if (profile) {
+      // When the profile is set, check if the user is already a friend of the LINE OA
+      // Example: Check if the user is already added as a friend
+      liff.getAccessToken().then((token) => {
+        // Here you would use the token to query the LINE OA API if needed.
+        // If the user is not a friend, you can trigger an action to add the OA friend.
+        // This might involve redirecting them to your OA friend URL or prompting them.
+      }).catch((error) => {
+        console.error('Failed to get access token', error);
       });
     }
   }, [profile]);
@@ -46,7 +50,7 @@ export default function Login() {
   };
 
   const navigateToRegister = () => {
-    router.push(`/signup`);
+    router.push('/signup');
   };
 
   const handleCheckGrade = async () => {
@@ -75,16 +79,6 @@ export default function Login() {
     }
   };
 
-  const redirectToLineOA = () => {
-    // Automatically redirect to the Line OA "Add Friend" page
-    if (liff.isLoggedIn()) {
-      liff.openWindow({
-        url: 'https://lin.ee/H0GtBKF',  // Replace with your actual LINE OA URL
-        external: true,  // Opens in the external browser
-      });
-    }
-  };
-
   return profile ? (
     <div className={styles.loginContainer}>
       <div className={styles.profileCard}>
@@ -108,10 +102,6 @@ export default function Login() {
             disabled={loading}
           >
             {loading ? 'Checking...' : <><FaCheckCircle className={styles.icon} /> Check Grade</>}
-          </button>
-          {/* Add a button to redirect the user to the LINE OA "Add Friend" page */}
-          <button className={`${styles.btn} ${styles.btnAddFriend}`} onClick={redirectToLineOA}>
-            <FaUserCircle className={styles.icon} /> Add Friend on LINE
           </button>
         </div>
         {grades && (
