@@ -10,16 +10,16 @@ import "react-toastify/dist/ReactToastify.css";
 export function GlobalProvider({ children }) {
   return (
     <>
-    <LiffSessionProvider>
+
     <SessionProvider>
     <ToastContainer position="bottom-right" />
         <AuthProvider>
-            <GradeProvider>
+
             {children}
-            </GradeProvider>
+
         </AuthProvider>
     </SessionProvider>
-    </LiffSessionProvider>
+
     </>
   );
 }

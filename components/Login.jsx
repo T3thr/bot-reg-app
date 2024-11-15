@@ -30,7 +30,6 @@ export default function Login() {
           const profileData = await liff.getProfile();
           setProfile(profileData);
           localStorage.setItem('lineUserId', profileData.userId); // Save user ID
-          router.push('/grade'); // Redirect to the grade page
         } else {
           liff.login(); // Trigger login if not logged in
         }
