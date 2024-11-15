@@ -89,6 +89,15 @@ export const options = {
       liff.login();
     }
   },
+
+  async getProfileFromLIFF() {
+    await liff.init({ liffId: process.env.NEXT_PUBLIC_LIFF_ID });
+    if (liff.isLoggedIn()) {
+      const profileData = await liff.getProfile();
+      return profileData;
+    }
+    return null;
+  },
 };
 
 export default options;

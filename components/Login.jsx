@@ -3,9 +3,9 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
-import liff from '@line/liff';
 import { FaUserCircle, FaSignOutAlt, FaRegRegistered, FaCheckCircle } from 'react-icons/fa';
 import styles from './Login.module.css';
+import { options } from '@/app/api/auth/[...nextauth]/options'; // Import options.js
 
 export default function Login() {
   const { data: session, status } = useSession(); // Use session from NextAuth
@@ -25,13 +25,12 @@ export default function Login() {
       });
     } else {
       // If not logged in, trigger LIFF login
-      liff.init({ liffId: process.env.NEXT_PUBLIC_LIFF_ID }).then(async () => {
-        if (liff.isLoggedIn()) {
-          const profileData = await liff.getProfile();
+      options.getProfileFromLIFF().then(profileData => {
+        if (profileData) {
           setProfile(profileData);
           localStorage.setItem('lineUserId', profileData.userId); // Save user ID
         } else {
-          liff.login(); // Trigger login if not logged in
+          options.adapter().then(() => liff.login()); // Trigger login if not logged in
         }
       });
     }

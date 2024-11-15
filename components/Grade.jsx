@@ -1,24 +1,51 @@
-import { getServerSession } from 'next-auth/next'
-import { options } from '@/app/api/auth/[...nextauth]/options'; // Import session handling options
+'use client';
 
+import { useSession } from 'next-auth/react';
+import { useState, useEffect } from 'react';
 import styles from './Grade.module.css';
 
-export default async function Grade() {
-    const session = await getServerSession(options)
+export default function Grade() {
+  const { data: session, status } = useSession(); // Get session info from NextAuth
+  const [grades, setGrades] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  // Fetch grades using the session's lineUserId
-  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/checkgrade?lineUserId=${session.user.id}`);
-  const data = await res.json();
+  useEffect(() => {
+    // Wait until session is fully loaded
+    if (status === 'loading') return;
 
-  if (!data.success) {
-    return (
-      <div className={styles.error}>
-        <p>{data.error || 'Failed to fetch grades.'}</p>
-      </div>
-    );
-  }
+    if (!session || !session.user?.id) {
+      setError('You need to be logged in to view grades.');
+      setLoading(false);
+      return;
+    }
 
-  const grades = data.grades;
+    const fetchGrades = async () => {
+      try {
+        // Fetch grades using the LINE User ID from the session
+        const response = await fetch(`/api/checkgrade?lineUserId=${session.user.id}`, {
+          method: 'GET',
+        });
+
+        const data = await response.json();
+        if (data.success) {
+          setGrades(data.grades);
+        } else {
+          setError(data.error || 'Failed to fetch grades.');
+        }
+      } catch (err) {
+        setError('An error occurred while fetching grades.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchGrades();
+  }, [session, status]);
+
+  if (loading) return <p>Loading grades...</p>;
+
+  if (error) return <p className={styles.error}>{error}</p>;
 
   return (
     <div className={styles.gradesContainer}>
