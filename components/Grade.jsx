@@ -20,7 +20,7 @@ export default function Grade() {
 
     const fetchGrades = async () => {
       try {
-        const response = await fetch(`/api/checkgrade?lineUserId=${lineUserId}`, {
+        const response = await fetch(`/api/checkgrade`, {
           method: 'GET',
         });
 
