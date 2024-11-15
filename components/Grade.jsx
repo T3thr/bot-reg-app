@@ -1,50 +1,59 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useSearchParams } from 'next/navigation';
-import styles from './Grade.module.css'
-
+import { useSession, signIn } from 'next-auth/react';
+import styles from './Grade.module.css';
 
 export default function Grade() {
+  const { data: session, status } = useSession(); // Access session data via NextAuth
   const [grades, setGrades] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const searchParams = useSearchParams();
-  const lineUserId = searchParams.get('lineUserId');
 
   useEffect(() => {
-    if (!lineUserId) {
-      setError('No LINE User ID provided.');
-      setLoading(false);
-      return;
-    }
-
     const fetchGrades = async () => {
-        try {
-          const response = await fetch(`/api/checkgrade?lineUserId=${lineUserId}`, {
-            method: 'GET',
-          });
-      
-          const data = await response.json();
-          if (data.success) {
-            setGrades(data.grades);
-          } else {
-            setError(data.error || 'Failed to fetch grades.');
-          }
-        } catch (err) {
-          setError('An error occurred while fetching grades.');
-        } finally {
-          setLoading(false);
+      if (status === 'loading') return; // Wait for session to load
+      if (!session?.user?.id) {
+        setError('You are not logged in. Please log in via LINE.');
+        setLoading(false);
+        return;
+      }
+
+      try {
+        const response = await fetch(`/api/checkgrade`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ lineUserId: session.user.id }),
+        });
+
+        const data = await response.json();
+        if (data.success) {
+          setGrades(data.grades);
+        } else {
+          setError(data.error || 'Failed to fetch grades.');
         }
-      };
-      
+      } catch (err) {
+        setError('An error occurred while fetching grades.');
+      } finally {
+        setLoading(false);
+      }
+    };
 
     fetchGrades();
-  }, [lineUserId]);
+  }, [session, status]);
 
-  if (loading) return <p>Loading grades...</p>;
+  if (loading || status === 'loading') return <p>Loading grades...</p>;
 
-  if (error) return <p className={styles.error}>{error}</p>;
+  if (error) {
+    return (
+      <div className={styles.error}>
+        <p>{error}</p>
+        {status !== 'authenticated' && (
+          <button onClick={() => signIn('line')}>Login with LINE</button>
+        )}
+      </div>
+    );
+  }
 
   return (
     <div className={styles.gradesContainer}>

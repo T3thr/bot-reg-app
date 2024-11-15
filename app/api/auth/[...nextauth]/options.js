@@ -1,5 +1,4 @@
 import NextAuth from 'next-auth';
-import Providers from 'next-auth/providers';
 import mongodbConnect from '@/backend/lib/mongodb';
 import User from '@/backend/models/User';
 
