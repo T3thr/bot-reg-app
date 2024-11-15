@@ -3,36 +3,49 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useGrade } from '@/context/GradeContext'; // Import the custom hook from context
 import { useUserByLineUserId } from '@/backend/lib/gradeAction'; // Import the new hook from GradeAction.js
 import styles from './Grade.module.css';
 
 export default function Grade() {
   const [lineUserId, setLineUserId] = useState(null);
-  const { grades, loading, error, analysis, fetchGrades } = useGrade(); // Access context values
-
-  // Fetch user data from MongoDB using the lineUserId
-  const { data: user, isLoading: userLoading, error: userError } = useUserByLineUserId(lineUserId);
+  const [grades, setGrades] = useState(null);  // Store grades locally
+  const { data: user, isLoading: userLoading, error: userError } = useUserByLineUserId(lineUserId); // Fetch user data
 
   useEffect(() => {
     const userIdFromUrl = new URLSearchParams(window.location.search).get('lineUserId');
     if (userIdFromUrl) {
       setLineUserId(userIdFromUrl);
-      fetchGrades(userIdFromUrl); // Fetch grades using context function
+      fetchGrades(userIdFromUrl); // Fetch grades
     } else {
       const userIdFromStorage = localStorage.getItem('lineUserId');
       if (userIdFromStorage) {
         setLineUserId(userIdFromStorage);
-        fetchGrades(userIdFromStorage); // Fetch grades using context function
+        fetchGrades(userIdFromStorage); // Fetch grades
       } else {
         setError('No LINE User ID found.');
       }
     }
-  }, [fetchGrades]);
+  }, []);
 
-  if (loading || userLoading) return <p>Loading...</p>;
-  if (error) return <p className={styles.error}>{error}</p>;
+  // Fetch grades based on the lineUserId
+  const fetchGrades = async (lineUserId) => {
+    try {
+      const response = await fetch(`/api/grades?lineUserId=${lineUserId}`);
+      const data = await response.json();
+      if (data.success) {
+        setGrades(data.grades); // Store grades locally
+      } else {
+        setError(data.error || 'Failed to fetch grades.');
+      }
+    } catch (err) {
+      setError('An error occurred while fetching grades.');
+    }
+  };
+
+  if (userLoading) return <p>Loading user...</p>;
   if (userError) return <p className={styles.error}>Error fetching user data: {userError.message}</p>;
+
+  if (!user || !grades) return <p>Loading grades...</p>;
 
   return (
     <div className={styles.gradesContainer}>
@@ -48,11 +61,6 @@ export default function Grade() {
 
       <h2>Grades</h2>
       <pre>{JSON.stringify(grades, null, 2)}</pre>
-
-      <div className={styles.analysis}>
-        <p>{analysis?.message}</p>
-        {analysis?.eValMessage && <p className={styles.eVal}>{analysis.eValMessage}</p>}
-      </div>
     </div>
   );
 }
