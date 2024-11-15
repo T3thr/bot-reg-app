@@ -40,6 +40,7 @@ export default function Login() {
   const handleLogout = () => {
     liff.logout();
     localStorage.removeItem('lineUserId');
+    window.location.reload();
   };
 
   const navigateToRegister = () => {

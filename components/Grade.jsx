@@ -1,50 +1,29 @@
-'use client';
-
-import { useSession } from 'next-auth/react'; // Use session from NextAuth
-import { useState, useEffect } from 'react';
+import { getServerSession } from 'next-auth';
+import { options } from '@/app/api/auth/[...nextauth]/options'; // Import session handling options
+import { redirect } from 'next/navigation'; // For redirecting to login if no session
 import styles from './Grade.module.css';
 
-export default function Grade() {
-  const { data: session, status } = useSession(); // Get session info from NextAuth
-  const [grades, setGrades] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+export default async function GradePage() {
+  const session = await getServerSession(authOptions); // Get server-side session
 
-  useEffect(() => {
-    // Wait for session to load
-    if (status === 'loading') return;
+  if (!session || !session.user?.id) {
+    // Redirect to login if no session exists
+    redirect('/');
+  }
 
-    if (!session || !session.user?.id) {
-      setError('You need to be logged in to view grades.');
-      setLoading(false);
-      return;
-    }
+  // Fetch grades using the session's lineUserId
+  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/checkgrade?lineUserId=${session.user.id}`);
+  const data = await res.json();
 
-    const fetchGrades = async () => {
-      try {
-        // Fetch grades using the LINE User ID from the session
-        const response = await fetch(`/api/checkgrade?lineUserId=${session.user.id}`, {
-          method: 'GET',
-        });
-        const data = await response.json();
-        if (data.success) {
-          setGrades(data.grades);
-        } else {
-          setError(data.error || 'Failed to fetch grades.');
-        }
-      } catch (err) {
-        setError('An error occurred while fetching grades.');
-      } finally {
-        setLoading(false);
-      }
-    };
+  if (!data.success) {
+    return (
+      <div className={styles.error}>
+        <p>{data.error || 'Failed to fetch grades.'}</p>
+      </div>
+    );
+  }
 
-    fetchGrades();
-  }, [session, status]);
-
-  if (loading) return <p>Loading grades...</p>;
-
-  if (error) return <p className={styles.error}>{error}</p>;
+  const grades = data.grades;
 
   return (
     <div className={styles.gradesContainer}>
