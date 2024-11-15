@@ -1,7 +1,5 @@
 import NextAuth from 'next-auth';
 import CredentialsProvider from "next-auth/providers/credentials";
-import mongodbConnect from '@/backend/lib/mongodb';
-import User from '@/backend/models/User';
 import liff from '@line/liff';
 
 export const options = {
@@ -58,16 +56,7 @@ export const options = {
   },
   events: {
     async signIn({ user, account, profile }) {
-      // Ensure the user is stored in the database after successful sign-in
-      await mongodbConnect();
-      const existingUser = await User.findOne({ lineUserId: profile.userId });
-      if (!existingUser) {
-        await User.create({
-          lineUserId: profile.userId,
-          username: '', // Placeholder for username
-          password: '', // Placeholder for password
-        });
-      }
+      // You can add logic here to handle sign-in events if needed
     },
   },
   pages: {
@@ -89,14 +78,10 @@ export const options = {
       liff.login();
     }
   },
-
-  async getProfileFromLIFF() {
-    await liff.init({ liffId: process.env.NEXT_PUBLIC_LIFF_ID });
-    if (liff.isLoggedIn()) {
-      const profileData = await liff.getProfile();
-      return profileData;
-    }
-    return null;
+  async signOut() {
+    // Use liff.logout to handle sign out
+    await liff.logout();
+    window.location.reload();
   },
 };
 
